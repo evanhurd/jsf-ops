@@ -17,10 +17,11 @@ function addTransaction(categoryId, date, description, debit, credit, balance){
 
 		var newCategory = null;
 		var newMoney = null;
+		console.log(categoryId);
 		Models.Category.findById(categoryId)
 		.then(function(category){
-
-			if(!category) return reject('Could not find Category!')
+			console.log(category);
+			if(!category) return reject('Could not find Category!');
 			Models.Transaction.create({
 				"description" : description,
 				"debit" : debit,
