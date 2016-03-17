@@ -9,17 +9,9 @@ var Money = db.define('money', {
 	, credit : {type: db.DataTypes.DECIMAL(10,2), defaultValue: 0 }
 	, balance : {type: db.DataTypes.DECIMAL(10,2), defaultValue: 0 }
 	, date : db.DataTypes.DATEONLY
-}, {
-	classMethods :{
-
-	}
 });
 
 Category.hasMany(Money);
 Transaction.hasMany(Money);
 
 module.exports = Money;
-
-function add(description, debit, credit, balance, date){
-	return this.create();
-}

@@ -1,0 +1,25 @@
+Money
+	Get
+	Add
+	Delete
+	Update
+	Split
+	MoveMoneyToCategory
+	GetTransaction
+	Destory
+
+Transaction
+	GetMonies
+
+Category
+	Get
+	GetByCategoryId
+	Add
+	Delete
+	Update
+	GetMoniesByDate
+	UpdateBalance
+	BalanceFrom
+
+Forcast
+	CreateForcast
