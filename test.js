@@ -1,4 +1,8 @@
-var Promise = require('promise');
+var a = (b) => {console.log(1)};
+
+a(1);
+
+/*var Promise = require('promise');
 
 var p = new Promise(function(resolve, reject){
 	resolve(p2());
@@ -10,4 +14,4 @@ var p = new Promise(function(resolve, reject){
 
 function p2(){
 	return new Promise(function(resolve){resolve(1)}) 
-}
+}*/

@@ -3,5 +3,6 @@ module.exports = {
 	"Money" : require("./tables/money.js"),
 	"Transaction" : require("./tables/transaction.js"),
 	"Balance" : require("./tables/balance.js"),
-	"BalanceForcast" : require("./tables/balanceforcast.js")
+	"BalanceForcast" : require("./tables/balanceforcast.js"),
+	"ImportRule" : require("./tables/importrule.js")
 };

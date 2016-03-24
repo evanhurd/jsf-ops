@@ -11,6 +11,7 @@ var Money = db.define('money', {
 	, date : db.DataTypes.DATEONLY
 });
 
+Money.belongsTo(Category);
 Category.hasMany(Money);
 Transaction.hasMany(Money);
 

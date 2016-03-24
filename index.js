@@ -10,9 +10,6 @@ db.sync({force:true})
 
 
 function run_tests(){
-	console.log(Models.Category.findById(1).toString())
-
-
 	console.log('Running Tests....');
 	require('./tests/money.js');
 }

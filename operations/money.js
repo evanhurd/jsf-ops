@@ -1,110 +1,104 @@
 var Models = require('../models/models.js');
-var Promise = require('promise');
 
 module.exports = {
 	addTransaction : addTransaction,
-	splitTransaction : splitTransaction
+	transferMoney : transferMoney,
+	moveMoney : moveMoney,
+	getMoniesByCategoryAndDate : getMoniesByCategoryAndDate
 };
 
-function addTransaction(categoryId, date, description, debit, credit, balance){
-	return new Promise(function(resolve, reject){
-		var categoryId = categoryId || 1;
-		var date = date || new Date().toString();
-		var description = description || '';
-		var debit = debit || 0;
-		var credit = credit || 0;
-		var balance = balance || 0;
+function moveMoney(moneyId, categoryId){
+	return (function(moneyId, categoryId){
+		this.category = null;
+		return new Promise(function(resolve, reject){
+			resolve(Models.Category.findById(categoryId));
+		})
+		.then(category => {
+			this.category = category;
+			if(!category) throw new Error('Could not find Category!');
+			return Models.Money.findById(moneyId);
+		})
+		.then(money => {
+			if(!money) throw new Error('Could not find Money!');
+			return money.update({"categoryId" : this.category.id});
+		});
+	})(moneyId, categoryId);
+}
 
-		var newCategory = null;
-		var newMoney = null;
-		console.log(categoryId);
-		Models.Category.findById(categoryId)
-		.then(function(category){
-			console.log(category);
-			if(!category) return reject('Could not find Category!');
-			Models.Transaction.create({
+function addTransaction(categoryId, date, description, debit, credit, balance){
+	return (function(categoryId, date, description, debit, credit, balance){
+
+		return new Promise(function(resolve, reject){
+			resolve(Models.Category.findById(categoryId));
+		})
+		.then(category => {
+			if(!category) throw new Error('Could not find Category!');
+
+			return Models.Transaction.create({
 				"description" : description,
 				"debit" : debit,
 				"credit" : credit,
 				"balance" : balance,
 				"date" : date
-			})
-			.then(function(transaction){
-				Models.Money.create({
-					"description" : description,
-					"debit" : debit,
-					"credit" : credit,
-					"balance" : balance,
-					"date" : date,
-					"categoryId": category.id,
-					"transactionId": transaction.id
-				})
-				.then(resolve, reject);
-			}, reject)
-		}, reject)
-	});
+			});
+
+		})
+		.then(transaction => {
+			return Models.Money.create({
+				"description" : transaction.description,
+				"debit" : transaction.debit,
+				"credit" : transaction.credit,
+				"date" : transaction.date,
+				"categoryId" : categoryId,
+				"transactionId" : transaction.id
+			});
+		}, error => {console.log(error)});
+
+	})(categoryId, date, description, debit, credit, balance);
 };
 
-function splitTransaction(moneyId, amount, description, categoryId){
+function transferMoney(moneyId, amount, categoryId, description){
 	return new Promise(function(resolve, reject){
-		new Run(
-			{
-				moneyId : moneyId,
-				amount : amount,
-				description : description,
-				categoryId : categoryId	
-			},
+		resolve(Models.Category.findById(categoryId));
+	})
+	.then(category => {
+		if(!category) throw new Error('Could not find Category!');
+		return Models.Money.findById(moneyId);
+	})
+	.then(money => {
+		if(!money) throw new Error('Could not find Money!');
 
-			function(next){
-				if(!this.categoryId) return next();
-				Models.Category.findById(this.categoryId)
-				.then(function(category){
-					if(!category) return reject('Could not find Category!')
-					next(category)
-				})
-			},
+		var updateMoney = {
+			debit : money.debit > 0 ? money.debit - amount : 0,
+			credit : money.credit > 0 ? money.credit - amount : 0
+		};
 
-			function(next){
-				if(!this.categoryId) return next();
-				Models.Money.findById(this.categoryId)
-				.then(function(money){
-					if(!money) return reject('Could not find Money!');
-					this.categoryId = this.categoryId || money.categoryId;
-					this.description = this.description || money.description;
-					this.debit = money.debit > 0 ? money.debit - this.amount : 0;
-					this.credit = money.credit > 0 ? money.credit - this.credit : 0;
+		newMoney = {
+			categoryId : categoryId || money.categoryId,
+			description : description || money.description,
+			transactionId : money.transactionId,
+			debit : money.debit > 0 ? amount : 0,
+			credit : money.credit > 0 ? amount : 0,
+			date : money.date
+		};
 
-					if(this.debit < 0 || this.credit < 0) return reject('Cannot Split money greater than existing amount!');
+		if(updateMoney.debit < 0 || updateMoney.credit < 0) throw new Error('Cannot split money greater than existing amount!');
 
-					next(money);
-				}.bind(this))
-			},
+		if(updateMoney.debit == 0 && updateMoney.credit == 0){
+			return money.update({categoryId : this.categoryId});
+		}else{
+			var updatePromise = money.update(updateMoney);
+			var createMoney = Models.Money.create(newMoney);
+			return Promise.all([updatePromise, createMoney]);
+		}
+	})
+}
 
-			function(next, money){
-				if(this.debit == 0 && this.credit == 0){
-					money.update({categoryId : this.categoryId})
-					.then(resolve, reject);
-				}else{
-				money.update({debit : this.debit, credit: this.credit})
-				.then(function(money){ next(money)}, reject);			
-				}
-			},
-
-			function(money){
-				Models.Money.create({
-					"description" : this.description || money.description,
-					"debit" : this.debit,
-					"credit" : this.credit,
-					"balance" : 0,
-					"date" : money.date,
-					"categoryId": this.categoryId,
-					"transactionId": money.transactionId
-				})
-				.then(function(newMoney){
-					resolve(newMoney, money);
-				}, reject);
-			}
-		)
-
+function getMoniesByCategoryAndDate(categoryId, fromDate, toDate){
+	return Models.Money.findAll({
+		where: {
+			categoryId : categoryId,
+			date : {$or : {$gte : fromDate, $lte: toDate}}
+		}
 	});
 }
