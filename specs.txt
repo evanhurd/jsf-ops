@@ -1,8 +1,26 @@
 Create Category
-Create Money
+    jsf --new-category --name="Category Name"
+Create Import Rule
+    jsf --create-rule --category=0 --description="Rule Name" --regex="/test/"
+List Import Rules
+    jsf --list-rules --category=0
+Remove Import Rule
+    jsf --remove-rule --rule=1
+Import From File
+    jsf --import-money --category=1 "/path/to/file"
 Transfer Money
+    jsf --transfer --money=1 --category=2 --amount=10.00
+Get Monies
+    jsf --list --category=1 --range=02/23/2005-05/23/2006
+Get Balance
+    jsf --balance --week/--month --category=1 --range=02/23/2005-05/23/2006
+Create Forcast
+    jsf --create-forcast --category=1 --range=02/23/2005-05/23/2006
+Get Forcast
+    jsf --get-forcast --week --month --category=1 --range=02/23/2005-05/23/2006
+    
 
-
+    
 Money
 	Get
 	Add

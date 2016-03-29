@@ -26,8 +26,12 @@ new Promise((resolve, reject) => {
 	return Ops.Balance.updateBalance(2);
 }, logReject)
 .then(result => {
-	console.log(result)
+	return Ops.ImportRule.createRule(1, 'Starbucks', '/starbucks/gi');
+}, logReject)
+.then(rule => {
+	console.log("Create New Rule:", rule != null);
 }, logReject);
+
 
 function logReject(reject){
 	console.log("REJECT:", reject);

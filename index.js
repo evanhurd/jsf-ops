@@ -7,8 +7,6 @@ db.sync({force:true})
 	run_tests();
 });
 
-
-
 function run_tests(){
 	console.log('Running Tests....');
 	require('./tests/money.js');
