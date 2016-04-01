@@ -1,4 +1,6 @@
 var Sequelize = require('sequelize');
+var fs = require('fs')
+fs.truncate('./logs.txt', 0, function(){console.log('done')})
 
 var sequelize = new Sequelize('jsfinance', 'root', 'stingray', {
   host: '127.0.0.1',
@@ -11,9 +13,13 @@ var sequelize = new Sequelize('jsfinance', 'root', 'stingray', {
     idle: 10000
   },
 
-  logging : false
+  logging : log
 });
 
 sequelize.DataTypes = Sequelize;
 
 module.exports = sequelize;
+
+function log(msg){
+	fs.appendFile('./logs.txt', msg + '\n', function (){});
+}

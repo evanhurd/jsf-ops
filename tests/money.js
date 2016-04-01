@@ -9,6 +9,7 @@ new Promise((resolve, reject) => {
 })
 .then(money => {
 	console.log("Created Money:", money != null);
+	//return new Promise((resolve, reject) => {});
 	return Ops.Money.transferMoney(money.id, 25, money.categoryId);
 }, logReject)
 .then((money) => {
@@ -26,12 +27,25 @@ new Promise((resolve, reject) => {
 	return Ops.Balance.updateBalance(2);
 }, logReject)
 .then(result => {
-	return Ops.ImportRule.createRule(1, 'Starbucks', '/starbucks/gi');
+	return Ops.ImportRule.createRule(2, 'FUZZYS', 'FUZZYS');
 }, logReject)
 .then(rule => {
 	console.log("Create New Rule:", rule != null);
-}, logReject);
-
+	return create_rules();
+}, logReject)
+.then(rules => {
+	console.log("Create Categories and Rules:", rules.length > 0);
+	console.log("Importing Money");
+	return Ops.ImportCSV("/home/evan/Dropbox/AccountHistory.csv",1);
+}, logReject)
+.then(results => {
+	console.log(results.length);
+	return Ops.ImportCSV("/home/evan/Dropbox/AccountHistory.csv",1);
+}, logReject)
+.then(money => {
+	console.log("Updating All Balances");
+	return Ops.Balance.updateAllBalances();
+}, logReject)
 
 function logReject(reject){
 	console.log("REJECT:", reject);
@@ -50,6 +64,7 @@ function create_accounts(){
 
 
 function create_fake_charges(count){
+	console.log("Create Charges");
 	var balance = 0;
 	var year =  2015;
 	var month = 1;
@@ -81,4 +96,24 @@ function create_fake_charges(count){
 	}
 
 	return Promise.all(promiseArray);
+}
+
+function create_rules(){
+	return Promise.all([
+		createCategoryAndRule("Food", 'Fuzzy|coffee|SPRING CREEK|VEND PRO II IRVING|RAISING CANE|BUFFALO WILD|YELLOW ROSE|PRIME|TACO BELL|STARBUCKS'),
+		createCategoryAndRule("Grocery", 'Food|WallMart|Albertsons'),
+		createCategoryAndRule("Gas", 'LOVES|FASTOP|CHEVRON|SHELL|QUIKTRIP'),
+		createCategoryAndRule("Tech", 'AMAZON|DROPBOX')
+		
+
+	]);
+}
+
+function createCategoryAndRule(name,rule){
+	return (function(name,rule){
+		return Ops.Category.addCategory(name)
+		.then(category =>{
+			return Ops.ImportRule.createRule(category.id, name, rule);
+		});
+	})(name,rule)
 }

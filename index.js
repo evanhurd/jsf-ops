@@ -11,5 +11,3 @@ function run_tests(){
 	console.log('Running Tests....');
 	require('./tests/money.js');
 }
-
-

@@ -36,3 +36,4 @@ function updateRule(importRuleId, categoryId, description, regex){
 		});
 	});
 }
+
