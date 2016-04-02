@@ -36,7 +36,7 @@ new Promise((resolve, reject) => {
 .then(rules => {
 	console.log("Create Categories and Rules:", rules.length > 0);
 	console.log("Importing Money");
-	return Ops.ImportCSV("/home/evan/Dropbox/AccountHistory.csv",1);
+	return Ops.ImportCSV("/home/evan/Dropbox/AccountHistory_full.csv",1);
 }, logReject)
 .then(results => {
 	console.log(results.length);
@@ -45,6 +45,10 @@ new Promise((resolve, reject) => {
 .then(money => {
 	console.log("Updating All Balances");
 	return Ops.Balance.updateAllBalances();
+}, logReject)
+.then(money => {
+	console.log("Creating Forcasts");
+	return Ops.Forcast.createAllForcasts(new Date(), '04/02/2017', 4, '01/01/2014');
 }, logReject)
 
 function logReject(reject){
@@ -103,9 +107,8 @@ function create_rules(){
 		createCategoryAndRule("Food", 'Fuzzy|coffee|SPRING CREEK|VEND PRO II IRVING|RAISING CANE|BUFFALO WILD|YELLOW ROSE|PRIME|TACO BELL|STARBUCKS'),
 		createCategoryAndRule("Grocery", 'Food|WallMart|Albertsons'),
 		createCategoryAndRule("Gas", 'LOVES|FASTOP|CHEVRON|SHELL|QUIKTRIP'),
-		createCategoryAndRule("Tech", 'AMAZON|DROPBOX')
-		
-
+		createCategoryAndRule("Tech", 'AMAZON|DROPBOX'),
+		createCategoryAndRule("Income", 'WILCOMP|PAYROLL')
 	]);
 }
 

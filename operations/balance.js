@@ -4,7 +4,12 @@ var Category = require('./category.js');
 
 module.exports = {
 	updateBalance : updateBalance,
-	updateAllBalances : updateAllBalances
+	updateAllBalances : updateAllBalances,
+	getCategoryBalances : getCategoryBalances,
+	getMonthsAverage : getMonthsAverage,
+	getWeeksAverage : getWeeksAverage,
+	getAverage : getAverage,
+	getAverageOfLastFewMonths : getAverageOfLastFewMonths
 };
 
 function updateBalance(categoryId){
@@ -23,4 +28,54 @@ function updateAllBalances(){
 
 		return Promise.all(promiseArray);
 	})
+}
+
+function getCategoryBalances(categoryId){
+	return Models.findAll({categoryId : categoryId});
+}
+
+function getMonthsAverage(categoryId, fromYear){
+	var sql = `select
+			avg(credits) as credits,
+			avg(debits) as debits,
+			month
+		from balances
+		where categoryId = ${categoryId} and month != 0
+		and year >= ${fromYear}
+		group by month
+		order by month;`;
+	return db.query(sql, { type: db.QueryTypes.SELECT});
+}
+
+function getWeeksAverage(categoryId, fromYear){
+	var sql = `select
+			avg(credits) as credits,
+			avg(debits) as debits,
+			week
+		from balances
+		where categoryId = ${categoryId} and week != 0
+		and year >= ${fromYear}
+		group by week;`;
+	return db.query(sql, { type: db.QueryTypes.SELECT});
+}
+
+function getAverage(categoryId, fromYear){
+	var sql = `select
+			avg(credits) as credits,
+			avg(debits) as debits
+		from balances
+		where categoryId = ${categoryId} and week = 0
+		and year >= ${fromYear}`;
+	return db.query(sql, { type: db.QueryTypes.SELECT});
+}
+
+function getAverageOfLastFewMonths(categoryId, count){
+	var sql = `select
+			avg(credits) as credits,
+			avg(debits) as debits
+		from balances
+		where categoryId = ${categoryId} and week = 0
+		order by year desc, month desc
+		limit ${count}`
+	return db.query(sql, { type: db.QueryTypes.SELECT});
 }

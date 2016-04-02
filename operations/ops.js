@@ -3,5 +3,6 @@ module.exports = {
 	Category : require('./category.js'),
 	Balance : require('./balance.js'),
 	ImportRule : require('./importrule.js'),
-	ImportCSV : require('./importcsv.js')
+	ImportCSV : require('./importcsv.js'),
+	Forcast : require('./forcast.js')
 }
