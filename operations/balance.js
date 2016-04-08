@@ -70,12 +70,14 @@ function getAverage(categoryId, fromYear){
 }
 
 function getAverageOfLastFewMonths(categoryId, count){
-	var sql = `select
-			avg(credits) as credits,
-			avg(debits) as debits
-		from balances
-		where categoryId = ${categoryId} and week = 0
-		order by year desc, month desc
-		limit ${count}`
+	var sql = `select avg(credits) as credits, avg(debits) as debits from (
+			SELECT
+				credits,
+				debits
+			FROM balances
+			WHERE categoryId = ${categoryId} AND week = 0
+			ORDER BY year DESC, month DESC
+			LIMIT ${count}
+		) data;`;
 	return db.query(sql, { type: db.QueryTypes.SELECT});
 }

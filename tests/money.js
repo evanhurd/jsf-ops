@@ -47,9 +47,21 @@ new Promise((resolve, reject) => {
 	return Ops.Balance.updateAllBalances();
 }, logReject)
 .then(money => {
-	console.log("Creating Forcasts");
-	return Ops.Forcast.createAllForcasts(new Date(), '04/02/2017', 4, '01/01/2014');
+	console.log("Creating Balance Focast Test Rule Category");
+	return createCategoryAndRule("BalanceForcast", 'BalanceForcast');
 }, logReject)
+.then(results => {
+	return Ops.ImportCSV("/home/evan/git/jsFinance-cmd/tests/test.csv",1);
+}, logReject)
+.then(money => {
+	return Ops.Balance.updateBalance(12);
+}, logReject)
+.then(money => {
+	console.log("Creating Forcasts");
+	return Ops.Forcast.createForcast(12, new Date(), '04/04/2017', 4, '01/01/2014');
+	//return Ops.Forcast.createAllForcasts(new Date(), '04/04/2017', 4, '01/01/2014');
+}, logReject)
+
 
 function logReject(reject){
 	console.log("REJECT:", reject);

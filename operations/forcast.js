@@ -21,30 +21,36 @@ function createForcast(categoryId, fromDate, toDate, avgOfLast, adjustedBy){
 			Balance.getAverageOfLastFewMonths(categoryId, avgOfLast)
 		])
 		.then(result => {
-			console.log(result);
 			//var balances = createYearMonthWeekDictionaryFromBalanceRecords(result[0]);
 			var adjustments = result[0];
+			console.log(adjustments);
 			var avgCredits = parseFloat(result[1][0].credits);
 			var avgDebits = parseFloat(result[1][0].dedits);
-
+		
 			var forcastRecords = [];
 			var balance = 0;
+
+
 
 			for(var i = 0; i < range.length; i++){
 				var year = range[i].year;
 				var month = range[i].month;
-				
+				var credits = parseFloat(adjustments[month].credits);
+				var debits = parseFloat(adjustments[month].debits);
+
 				var forcast = {
 					year : year,
 					month : month,
 					week : 0,
 					categoryId : categoryId,
-					credits : (avgCredits  * parseFloat(adjustments[month].credits)) | 0,
-					debits : (avgDebits  * parseFloat(adjustments[month].debits)) | 0 
+					credits : (avgCredits  * credits) != NaN ? credits : 1,
+					debits : (avgDebits  * debits) != NaN ? debits : 1 
 				};
 
 				forcast.balance = balance + (forcast.credits - forcast.debits);
 				balance = forcast.balance;
+				//console.log(forcast);
+				//console.log("balance", balance);
 
 				forcastRecords.push(forcast);
 			}
@@ -136,16 +142,19 @@ function getMonthlyAdjustments(categoryId, fromYear){
 
 		for(var monthIndex = 1; monthIndex <= 12; monthIndex++){
 			var month = _getRecordByMonth(monthAverages, monthIndex);
-
 			if(month){
+				var creditsAvg = (( (month.credits | 1) * 100) / (average.credits | 1)) / 100;
+				var deditsAvg = (( (month.debits | 1)  * 100) / (average.debits | 1)) / 100;
+				console.log(creditsAvg, deditsAvg);
+
 				adjustment[monthIndex] = {
-					credits : (( month.credits * 100) / average.credits) / 100 ,
-					debits : (( month.debits * 100) / average.debits) / 100 
+					credits : creditsAvg < 0 && creditsAvg > 0 ?  creditsAvg : 1,
+					debits : deditsAvg < 0 && deditsAvg > 0 ?  deditsAvg : 1 
 				};
 			}else{
 				adjustment[monthIndex] = {
-					credits : average.credits | 0,
-					debits : average.debits | 0
+					credits : average.credits | 1,
+					debits : average.debits | 1
 				};
 			}
 		}

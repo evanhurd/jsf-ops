@@ -1,0 +1,13 @@
+<emset test = 1234>
+
+<emif test eq test>
+	Yes
+<cfelse>
+	No
+</emif>
+
+<emif test eq test>
+	Yes
+<cfelse>
+	No
+</emif>
