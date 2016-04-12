@@ -3,7 +3,7 @@
 var tagIdACount = 0;
 
 class Tag {
-    constructor(node) {
+    constructor(node, bite) {
     	tagIdACount++;
     	this.id = tagIdACount;
     	this.node = node;
@@ -11,6 +11,9 @@ class Tag {
     	this.name = node.name;
     	this.parentNode = null;
     	this.scoped = false;
+        this.attrBites = node.attrBites;
+        this.isTextTag = ( typeof node == 'string' ) ? true : false;
+        this.bite = bite;
     	this.init();
     }
 
@@ -38,10 +41,11 @@ class Tag {
 
     compileChildren(){
         var script = "";
+
         for(var i = 0; i < this.children.length; i++){
             script+=this.children[i].compile() + ((i !== this.children.length - 1) ? ',' : '');
         }
-
+        
         return `
             function(){
                 return [${script}]

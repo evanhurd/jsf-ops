@@ -8,7 +8,11 @@ class TEXTNODE extends Tag {
     }
 
     compile(){
-        return `TextValue("${this.value}")`;
+
+        return `function(){
+        	${this.bite.js}
+        	return $bite_${this.bite.id}();
+        }`;
     }
 }
 
