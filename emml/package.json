@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ast-types": "^0.8.16",
+    "esprima": "^2.7.2",
     "sax": "^1.2.1"
   }
 }

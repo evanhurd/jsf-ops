@@ -1,14 +1,12 @@
 "use strict";
-
+var esprima = require('esprima');
 var parser = require("sax").parser(false);
 var tagDB = require("../TagDatabase");
+var scoper = require("../scoper.js");
+
 var biteId = 0;
 
-var template = `<div style="display:\$\{'Black'\}" color="\$\{red\}"><span>
-
-	\$\{console.log('here')\}
-
-</span></div>`;
+var template = `<div><var name="test" value="foo"><div>\$\{test.displayMode\}</div></div>`;
 
 var stack = [];
 
@@ -51,6 +49,9 @@ parser.onend = function () {
 	var tag = stack[0];
 	var raw = tag.compile();
 	console.log(raw);
+	scoper(raw);
+	//var ast = esprima.parse(raw);
+	//console.log(JSON.stringify(ast, null, 4))
 	
 };
  
@@ -64,7 +65,7 @@ function getAtributeBites(attr){
 			name : key,
 			bite : bite,
 			raw : attr[key],
-			value : "${$bite_"+bite.id+"()}"
+			value : bite.js
 		};
 	}
 	return returnValue;
@@ -93,7 +94,7 @@ function getJSBite(str){
 	returnString = returnString.replace(/\s|\n|\r|\t/g, '\\s');
 
 	return {
-		js : `function $bite_${id}(){return ${returnString} }`,
+		js : `${returnString}`,
 		id : id
 	};
 }

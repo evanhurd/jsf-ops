@@ -41,16 +41,13 @@ class Tag {
 
     compileChildren(){
         var script = "";
-
+        var scope = "";
+        var elements = "";
         for(var i = 0; i < this.children.length; i++){
             script+=this.children[i].compile() + ((i !== this.children.length - 1) ? ',' : '');
         }
-        
-        return `
-            function(){
-                return [${script}]
-            }
-        `;
+
+        return script || "\"\"";
     }
 }
 
