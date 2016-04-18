@@ -5,37 +5,39 @@ class SCOPE extends Tag {
 
 	init(){
         this.value = this.node;
+
+        this.functionExpression = {
+            "type": "FunctionExpression",
+            "params": [],
+            "defaults": [],
+            "body": {
+                "type": "BlockStatement",
+                "body": [
+                    {
+                        "type": "BlockStatement",
+                        "body": []
+                    },
+                    {
+                        "type": "ReturnStatement",
+                        "argument": {
+                            "type": "ArrayExpression",
+                            "elements": []
+                        }
+                    }
+                ]
+            }
+        };
+
+        this.blockStatementBody = this.functionExpression.body.body[0].body;
     }
 
     compile(){
 
-        var data = this.compileChildren();
+        var returnStatements = this.compileChildren(this);
 
-        return {
+        this.functionExpression.body.body[1].argument.elements = returnStatements;
 
-            scope : [],
-            "return": {
-                "type": "FunctionExpression",
-                "params": [],
-                "defaults": [],
-                "body": {
-                    "type": "BlockStatement",
-                    "body": [
-                        {
-                            "type": "BlockStatement",
-                            "body": data.scope
-                        },
-                        {
-                            "type": "ReturnStatement",
-                            "argument": {
-                                "type": "ArrayExpression",
-                                "elements": data.return
-                            }
-                        }
-                    ]
-                }
-            }
-        }
+        return this.functionExpression;
     }
 }
 

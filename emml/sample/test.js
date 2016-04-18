@@ -3,10 +3,12 @@ var esprima = require('esprima');
 var parser = require("sax").parser(false);
 var tagDB = require("../TagDatabase");
 var scoper = require("../scoper.js");
+var escodegen = require('escodegen');
+
 
 var biteId = 0;
 
-var template = `<div><var name="test" value="foo"><div>\$\{test.displayMode\}</div></div>`;
+var template = `<div name="test" value="foo">\$\{test.displayMode\}<div></div></div>`;
 
 var stack = [];
 
@@ -47,9 +49,34 @@ parser.onclosetag = function(){
 
 parser.onend = function () {
 	var tag = stack[0];
-	var raw = tag.compile();
-	console.log(raw);
-	scoper(raw);
+
+	var ScopeTag = new tagDB('SCOPE');
+	var scope = new ScopeTag({name: 'scope'});
+	scope.addNode(tag);
+
+
+	var raw = scope.compile();
+	//console.log(raw);
+
+	var programBody = {
+	  "type": "Program",
+	  "body": [
+	    {
+	      "type": "ExpressionStatement",
+	      "expression": {
+	        "type": "CallExpression",
+	        "callee": raw,
+	        "arguments": []
+	      }
+	    }
+	  ],
+	  "sourceType": "module"
+	};
+
+	console.log(JSON.stringify(programBody, null, 4));
+	//scoper(programBody);
+
+	console.log(escodegen.generate(programBody));
 	//var ast = esprima.parse(raw);
 	//console.log(JSON.stringify(ast, null, 4))
 	

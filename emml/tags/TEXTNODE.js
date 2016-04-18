@@ -1,5 +1,6 @@
 "use strict";
 var Tag = require("./Tag.js");
+var esprima = require('esprima');
 
 class TEXTNODE extends Tag {
 
@@ -9,10 +10,13 @@ class TEXTNODE extends Tag {
 
     compile(){
 
-        return `function(){
-        	${this.bite.js}
-        	return $bite_${this.bite.id}();
-        }`;
+    	console.log("("+this.bite.js+")");
+
+    	var ast = esprima.parse("("+this.bite.js+")");
+    	
+        if(ast.body.length > 0){
+        	return ast.body[0];
+        }
     }
 }
 

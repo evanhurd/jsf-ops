@@ -18,31 +18,31 @@ class CFDEFAULTTAG extends Tag {
 
     }
 
-    compile(){
-    	var data = this.compileChildren();
-    	var rawAttr = getJsonAttributes(this);
+    compile(scope){
+
+        var args = [];
+
+    	var returns = this.compileChildren(scope);
+    	var rawAttr = "(" + getJsonAttributes(this) + ")";
     	var ast = esprima.parse(rawAttr);
-    	console.log(ast);
-    	var args = ast.body[0].body[0];
-    	args.concat(data.return);
+
+        if(ast.body.length > 0) args.push(ast.body[0]);
+        if(returns.length > 0) args.push(returns[0]);
     	return {
-    		scope : data.scope,
-	    	"return": {
-		        "type": "CallExpression",
-		        "callee": {
-		        	"type": "MemberExpression",
-		        	"computed": false,
-		          	"object": {
-		            	"type": "Identifier",
-		            	"name": "DOM"
-		          	},
-		          	"property": {
-		            	"type": "Identifier",
-		            	"name": this.name
-		         	}
-		        },
-		        "arguments": args
-	    	}
+	        "type": "CallExpression",
+	        "callee": {
+	        	"type": "MemberExpression",
+	        	"computed": false,
+	          	"object": {
+	            	"type": "Identifier",
+	            	"name": "DOM"
+	          	},
+	          	"property": {
+	            	"type": "Identifier",
+	            	"name": this.name
+	         	}
+	        },
+	        "arguments": args
     	};
     }
 }

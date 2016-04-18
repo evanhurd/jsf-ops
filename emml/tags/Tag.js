@@ -39,15 +39,14 @@ class Tag {
 
     compile(){}
 
-    compileChildren(){
-        var script = "";
-        var scope = "";
-        var elements = "";
+    compileChildren(scope){
+        var returnElements = [];
+
         for(var i = 0; i < this.children.length; i++){
-            script+=this.children[i].compile() + ((i !== this.children.length - 1) ? ',' : '');
+            returnElements.push(this.children[i].compile(scope))
         }
 
-        return script || "\"\"";
+        return returnElements;
     }
 }
 
