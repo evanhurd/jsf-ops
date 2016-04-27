@@ -3,12 +3,18 @@ var esprima = require('esprima');
 var parser = require("sax").parser(false);
 var tagDB = require("../TagDatabase");
 var scoper = require("../scoper.js");
+var getterSetter = require("../getterSetter.js");
 var escodegen = require('escodegen');
 
 
 var biteId = 0;
 
-var template = `<div name="test" value="foo">\$\{test.displayMode\}<div></div></div>`;
+var template = `
+<div>
+	<var name="a" value="1 \${test}"/>
+	<var name="b" value="1 \${a}"/>
+	<div>\${a + b}</div>
+</div>`;
 
 var stack = [];
 
@@ -73,10 +79,10 @@ parser.onend = function () {
 	  "sourceType": "module"
 	};
 
-	console.log(JSON.stringify(programBody, null, 4));
-	//scoper(programBody);
+	//console.log(JSON.stringify(programBody, null, 4));
+	var ast = getterSetter(scoper(programBody));
 
-	console.log(escodegen.generate(programBody));
+	console.log(escodegen.generate(ast));
 	//var ast = esprima.parse(raw);
 	//console.log(JSON.stringify(ast, null, 4))
 	
@@ -115,10 +121,11 @@ function getJSBite(str){
 	}
 
 	if(i < str.length - 1){
-		returnString+= "+\""+str.slice(i+1)+"\"";
+		if(returnString != "") returnString+= "+";
+		returnString+= "\""+str.slice(i)+"\"";
 	}
 
-	returnString = returnString.replace(/\s|\n|\r|\t/g, '\\s');
+	returnString = returnString.replace(/\s|\n|\r|\t/g, ' ');
 
 	return {
 		js : `${returnString}`,

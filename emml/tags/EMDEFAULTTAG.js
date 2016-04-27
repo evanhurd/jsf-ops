@@ -26,7 +26,7 @@ class CFDEFAULTTAG extends Tag {
     	var rawAttr = "(" + getJsonAttributes(this) + ")";
     	var ast = esprima.parse(rawAttr);
 
-        if(ast.body.length > 0) args.push(ast.body[0]);
+        if(ast.body.length > 0) args.push(ast.body[0].expression);
         if(returns.length > 0) args.push(returns[0]);
     	return {
 	        "type": "CallExpression",
@@ -64,7 +64,6 @@ function getJsonAttributes(tag){
 
 function getJSBites(tag){
 	var bites = "";
-	//console.log(tag.attrBites);
 	for(var key in tag.attrBites){
 		bites += tag.attrBites[key].bite.js + " ";
 	}

@@ -9,13 +9,9 @@ class TEXTNODE extends Tag {
     }
 
     compile(){
-
-    	console.log("("+this.bite.js+")");
-
     	var ast = esprima.parse("("+this.bite.js+")");
-    	
         if(ast.body.length > 0){
-        	return ast.body[0];
+        	return ast.body[0].expression;
         }
     }
 }

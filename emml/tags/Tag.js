@@ -14,6 +14,7 @@ class Tag {
         this.attrBites = node.attrBites;
         this.isTextTag = ( typeof node == 'string' ) ? true : false;
         this.bite = bite;
+        this.isSelfClosing = false;
     	this.init();
     }
 
@@ -43,7 +44,8 @@ class Tag {
         var returnElements = [];
 
         for(var i = 0; i < this.children.length; i++){
-            returnElements.push(this.children[i].compile(scope))
+            var child = this.children[i].compile(scope);
+            if(typeof child == "object") returnElements.push(child);
         }
 
         return returnElements;

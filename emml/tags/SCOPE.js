@@ -12,30 +12,26 @@ class SCOPE extends Tag {
             "defaults": [],
             "body": {
                 "type": "BlockStatement",
-                "body": [
-                    {
-                        "type": "BlockStatement",
-                        "body": []
-                    },
-                    {
-                        "type": "ReturnStatement",
-                        "argument": {
-                            "type": "ArrayExpression",
-                            "elements": []
-                        }
-                    }
-                ]
+                "body": []
             }
         };
 
-        this.blockStatementBody = this.functionExpression.body.body[0].body;
+        this.blockStatementBody = this.functionExpression.body.body;
     }
 
     compile(){
 
         var returnStatements = this.compileChildren(this);
 
-        this.functionExpression.body.body[1].argument.elements = returnStatements;
+        var returnStatement = {
+            "type": "ReturnStatement",
+            "argument": {
+                "type": "ArrayExpression",
+                "elements": returnStatements
+            }
+        };
+
+        this.blockStatementBody.push(returnStatement);
 
         return this.functionExpression;
     }
