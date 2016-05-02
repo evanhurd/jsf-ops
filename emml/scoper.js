@@ -28,9 +28,7 @@ function test(obj){
 	//console.log(escodegen.generate(ast));
 
 	var map = new astMap(ast);
-
-	console.log(JSON.stringify(map.map.paths, null, 4));;
-
+	
 	scopeFunctionArguments(map);
 	scopeVariableDeclaration(map);
 	scopeIdentifiers(map);

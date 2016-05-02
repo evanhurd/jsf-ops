@@ -1,7 +1,7 @@
 /*
 Turn all object.key to $scope.object.key
 */
-var rootScopeIdentifer = "$scope";
+var rootScopeIdentifer = "_$scope";
 var escodegen = require('escodegen');
 
 var esprima = require('esprima');
@@ -13,6 +13,14 @@ module.exports = function(ast){
 
 function getterSetter(ast){
 
+	var assignmentExpresions = getAssignmentExpressions(ast);
+	console.log(assignmentExpresions.length);
+
+	for(var i = 0; i < assignmentExpresions.length; i++){
+		convertAssignmentExpressionToSetter(assignmentExpresions[i]);
+	}
+
+
 	var memberExpressions = findAllRootMemberExpressions(ast);
 
 	for(var i = 0; i < memberExpressions.length; i++){
@@ -22,6 +30,36 @@ function getterSetter(ast){
 	}
 
 	return ast;
+}
+
+function convertAssignmentExpressionToSetter(expression){
+	expression.type = 'CallExpression';
+	expression.callee = {
+      "type": "Identifier",
+      "name": "setValue"
+    };
+
+    if(expression.left.property.type == 'Literal'){
+    	var value = expression.left.property;
+    }else if(expression.left.property.type == 'Identifier'){
+    	//console.log(expression.left.property.name);
+    	var value = {
+    		type : 'Literal',
+    		value : expression.left.property.name
+    	};
+    }else{
+    	var value = expression.left.property;
+    	value.computed = true;
+    }
+
+    expression.arguments = [
+    	expression.left.object,
+    	value,
+    	expression.right
+    ];
+
+    delete expression.left;
+	delete expression.right;
 }
 
 function convertMemberExpressionToGetter(memberExpression){
@@ -41,7 +79,7 @@ function convertMemberExpressionToGetter(memberExpression){
     		value : memberExpression.property.name
     	};
     }else{
-    	value = memberExpression.property;
+    	var value = memberExpression.property;
     	value.computed = true;
     }
 
@@ -55,6 +93,22 @@ function convertMemberExpressionToGetter(memberExpression){
 }
  
 
+function getAssignmentExpressions(ast){
+	var map = new astMap(ast);
+	var regex = /(AssignmentExpression)/;
+	var search = flatten(map.find(regex));
+	var results = [];
+
+	for(var i = 0; i < search.length; i++){
+		var node = search[i].node;
+		if(node.left.type == 'MemberExpression' && node.left.object.name.substring(0, "_$scope".length) == "_$scope") {
+			if(results.indexOf(node) == -1) results.push(node);
+		}
+		
+	}
+
+	return results;	
+}
 
 function findAllRootMemberExpressions(ast){
 	var map = new astMap(ast);
@@ -67,4 +121,17 @@ function findAllRootMemberExpressions(ast){
 	}
 
 	return results;
+}
+
+
+function flatten(search){
+	var ret = [];
+
+	for(var i = 0; i < search.length; i++){
+		for(var x = 0; x < search[i].length; x++){
+			ret.push(search[i][x]);
+		}
+	}
+
+	return ret;
 }

@@ -1,0 +1,75 @@
+'test' + key.value
+
+{
+    "type": "Program",
+    "body": [
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "BinaryExpression",
+                "operator": "+",
+                "left": {
+                    "type": "Literal",
+                    "value": "test",
+                    "raw": "'test'"
+                },
+                "right": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "type": "Identifier",
+                        "name": "key"
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "value"
+                    }
+                }
+            }
+        }
+    ],
+    "sourceType": "script"
+}
+
+===============================
+
+
+{                                                                                                                              
+    "type": "Program",                                                                                                         
+    "body": [                                                                                                                  
+        {                                                                                                                      
+            "type": "ExpressionStatement",                                                                                     
+            "expression": {                                                                                                    
+                "type": "CallExpression",                                                                                      
+                "callee": {                                                                                                    
+                    "type": "Identifier",                                                                                      
+                    "name": "call"                                                                                             
+                },                                                                                                             
+                "arguments": [                                                                                                 
+                    {                                                                                                          
+                        "type": "BinaryExpression",                                                                            
+                        "operator": "+",                                                                                       
+                        "left": {                                                                                              
+                            "type": "Literal",                                                                                 
+                            "value": "a",                                                                                      
+                            "raw": "'a'"                                                                                       
+                        },                                                                                                     
+                        "right": {                                                                                             
+                            "type": "MemberExpression",                                                                        
+                            "computed": false,                                                                                 
+                            "object": {                                                                                        
+                                "type": "Identifier",                                                                          
+                                "name": "obj"                                                                                  
+                            },                                                                                                 
+                            "property": {                                                                                      
+                                "type": "Identifier",                                                                          
+                                "name": "key"                                                                                  
+                            }                                                                                                  
+                        }                                                                                                      
+                    }                                                                                                          
+                ]                                                                                                              
+            }                                                                                                                  
+        }                                                                                                                      
+    ],                                                                                                                         
+    "sourceType": "script"                                                                                                     
+}                                                                                                                              

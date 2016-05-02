@@ -4,6 +4,8 @@ var parser = require("sax").parser(false);
 var tagDB = require("../TagDatabase");
 var scoper = require("../scoper.js");
 var getterSetter = require("../getterSetter.js");
+var binaryExpressify = require("../binaryExpressify.js");
+
 var escodegen = require('escodegen');
 
 
@@ -80,9 +82,26 @@ parser.onend = function () {
 	};
 
 	//console.log(JSON.stringify(programBody, null, 4));
-	var ast = getterSetter(scoper(programBody));
+	console.log('RAW');
+	console.log(escodegen.generate(programBody));
+	console.log('===============');
 
+	var ast = scoper(programBody);
+	console.log('SCOPED');
 	console.log(escodegen.generate(ast));
+	console.log('===============');
+
+	ast = getterSetter(ast);
+	console.log('GetterSetterified');
+	console.log(escodegen.generate(ast));
+	console.log('===============');
+
+	ast = binaryExpressify(ast);
+	console.log('binaryExpressified');
+	console.log(escodegen.generate(ast));
+	console.log('===============');
+
+	//console.log(escodegen.generate(ast));
 	//var ast = esprima.parse(raw);
 	//console.log(JSON.stringify(ast, null, 4))
 	
