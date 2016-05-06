@@ -6,7 +6,7 @@ var scopeIdCounter = 0;
 class SCOPE extends Tag {
 
 	init(){
-        this.value = this.node;
+        this.tagName = 'SCOPE';
 
         scopeIdCounter++;
         var scopeName = "_$scope"+scopeIdCounter;
@@ -29,36 +29,36 @@ class SCOPE extends Tag {
           "kind": "var"
         };
 
-        this.functionExpression = {
-            "type": "FunctionExpression",
-            "params": [],
-            "defaults": [],
-            "body": {
+        this.expressionStatement = {
+          "type": "ExpressionStatement",
+          "expression": {
+            "type": "CallExpression",
+            "callee": {
+              "type": "FunctionExpression",
+              "id": null,
+              "params": [],
+              "defaults": [],
+              "body": {
                 "type": "BlockStatement",
                 "body": [scopeDeclaration]
+              },
+              "generator": false,
+              "expression": false
             },
-            "scopeName": scopeName,
-            "scopeVariables" : []
+            "arguments": []
+          }
         };
-
-        this.blockStatementBody = this.functionExpression.body.body;
     }
 
     compile(){
 
-        var returnStatements = this.compileChildren(this);
+        var childExpressions = this.compileChildren();
 
-        var returnStatement = {
-            "type": "ReturnStatement",
-            "argument": {
-                "type": "ArrayExpression",
-                "elements": returnStatements
-            }
-        };
+        for(var i = 0; i < childExpressions.length;i++){
+            this.expressionStatement.expression.callee.body.body.push(childExpressions[i]);
+        }
 
-        this.blockStatementBody.push(returnStatement);
-
-        return this.functionExpression;
+        return [this.expressionStatement];
     }
 }
 

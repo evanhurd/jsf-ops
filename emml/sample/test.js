@@ -16,6 +16,9 @@ var template = `
 	<var name="a" value="1 \${test}"/>
 	<var name="b" value="1 \${a}"/>
 	<div>\${a + b}</div>
+	<loop \${var i = 0; i < 10; i++}>
+		<div></div>
+	</loop>
 </div>`;
 
 var stack = [];
@@ -34,7 +37,7 @@ parser.ontext = function (text) {
 
 parser.onopentag = function (node) {
 	var Tag = new tagDB(node.name);
-	//node.jsAttrib = parser.jsAttrib;
+	node.jsAttribute = parser.jsAttrib;
 	node.attrBites = getAtributeBites(node.attributes);
 	var tag = new Tag(node);
 	tag.ontagstart();

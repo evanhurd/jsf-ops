@@ -12,6 +12,7 @@ class Tag {
     	this.parentNode = null;
     	this.scoped = false;
         this.attrBites = node.attrBites;
+        this.jsAttribute = node.jsAttribute;
         this.isTextTag = ( typeof node == 'string' ) ? true : false;
         this.bite = bite;
         this.isSelfClosing = false;

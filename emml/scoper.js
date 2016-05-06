@@ -43,14 +43,17 @@ function scopeIdentifiers(map){
 	for(var i = 0; i < results.length; i++){
 
 		var scopeMe = true;
-		var scope = results[i][0].node;
-		var scopeName = CreateOrGetScope(scope);
+		//var scopeName = CreateOrGetScope(scope);
 		var variableDeclaration = results[i][1].node;
+		var scope = findRootScope(variableDeclaration);
+		var scopeName = scope.scopeName;
 		var varName = variableDeclaration.name;
 
 		var parentNode = variableDeclaration._$parent;
 		var parentKey = variableDeclaration._$parentKey;
 		var grandParentKey = variableDeclaration._$grandParentKey;
+
+
 
 		if(parentNode.type == "MemberExpression" && parentKey == "property" && parentNode.computed == true){
 			var scopeMe = true;
@@ -89,7 +92,7 @@ function scopeIdentifiers(map){
 			var scopeMe = false;
 		}
 
-		if(scopeMe && scope._$scopeVariables.indexOf(varName) >= 0){
+		if(scopeMe && scope.scopeVariables.indexOf(varName) >= 0){
 			var scopeMe = true;
 		}else{
 			var scopeMe = false;
@@ -140,7 +143,10 @@ function scopeVariableDeclaration(map){
 
 		var scope = results[i][0].node;
 		var variableDeclaration = results[i][1].node;
-		var scopeName = CreateOrGetScope(scope);
+
+		var scope = findRootScope(variableDeclaration);
+		var scopeName = scope.scopeName;
+
 
 
 		for(var x = 0; x < variableDeclaration.declarations.length;x++){
@@ -174,8 +180,9 @@ function scopeVariableDeclaration(map){
 	            }
 	          };
 
+	        console.log(scope);
 	        scope.body.body.splice(1,0,ExpressionStatement);
-	        scope._$scopeVariables.push(declarator.id.name);
+	        scope.scopeVariables.push(declarator.id.name);
 		}
 
 		var declarationIndex = scope.body.body.indexOf(variableDeclaration);
@@ -190,7 +197,8 @@ function scopeFunctionArguments(map){
 		var scope = identifers[i][0].node;
 		var identifier = identifers[i][1].node;
 
-		var scopeName = CreateOrGetScope(scope);
+		var scope = findRootScope(identifier);
+		var scopeName = scope.scopeName;
 
 
 		var ExpressionStatement = {
@@ -217,7 +225,7 @@ function scopeFunctionArguments(map){
             }
           };
 
-        scope._$scopeVariables.push(identifier.name);
+        scope.scopeVariables.push(identifier.name);
         scope.body.body.splice(1,0,ExpressionStatement);
 
 	}
@@ -225,6 +233,8 @@ function scopeFunctionArguments(map){
 
 var scopeIdCount = 0;
 function CreateOrGetScope(scope){
+
+	return findRootScope(scope);
 
 	if(scope._$scopeName) return scope._$scopeName;
 	scopeIdCount++;
@@ -249,4 +259,18 @@ function CreateOrGetScope(scope){
      scope._$scopeVariables = [];
      scope.body.body.splice(0,0,VariableDeclaration);
      return scope._$scopeName;
+}
+
+function findRootScope(node){
+	var parent = node;
+
+	while(parent.scopeName == undefined){
+		if(!parent._$parent){
+			throw "Fatal Error locating scope! Could not find scope.";
+		}
+
+		parent = parent._$parent;
+	}
+
+	return parent;
 }
