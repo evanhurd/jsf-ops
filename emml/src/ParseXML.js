@@ -25,6 +25,8 @@ function ParseXML(xmlString){
 			if(text.trim()){
 				var tag = new XMLTag();
 				tag.type = TagTypes.TEXT;
+				tag.tagName = 'TEXTNODE';
+				tag.value = text;
 				stack.push(tag);
 			}
 		};
@@ -46,9 +48,13 @@ function ParseXML(xmlString){
 		parser.onclosetag = function(){
 			var tag = parser.tag.tag;
 			if(tag){
+				var childTags = [];
 				while(stack.length && stack[stack.length-1] !== tag){
 					var childTag = stack.pop();
-					tag.addChild(childTag);
+					childTags.push(childTag);
+				}
+				for(var i = childTags.length - 1; i >= 0; i--){
+					tag.addChild(childTags[i]);
 				}
 			}
 		}
@@ -86,4 +92,17 @@ XMLTag.prototype.addChild = function(tag){
 	tag.parent = this;
 	this.children.push(tag);
 	return this;
+}
+
+XMLTag.prototype.toString = function(padding){
+	var padding = arguments[0] || "";
+
+	var ret = this.tagName + "\b\r";
+	console.log(padding + this.tagName);
+	for(var i = 0; i < this.children.length; i++){
+		ret += this.children[i].toString(padding + "\t");
+	}
+
+	ret = ret.replace(/\r/g, "\r\t");
+	return ret;
 }

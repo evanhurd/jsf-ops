@@ -48,9 +48,7 @@ class CFDEFAULTTAG extends Tag {
 		            	"type": "Literal",
 		            	"value": (this.parent) ? this.parent.id : 0,
 		            	"raw" : (this.parent) ? this.parent.id : 0
-		         	},
-
-		         	ast.body[0].expression
+		         	}
 		        ]
 	    	}
     	}];

@@ -15,6 +15,7 @@ class Tag {
         this.parent = null;
         this.xmlNode = null;
         this.isSelfClosing = true;
+        this.value = null;
     }
 
     init(){}
@@ -34,8 +35,10 @@ class Tag {
     compile(){}
 
     compileChildren(scope){
+
         var astExpressions = [];
         for(var i = 0; i < this.children.length;i++){
+            //console.log("COMPILING:", this.children[i].toString(), this.children[i].tagName);
             var expressions = this.children[i].compile();
             for(var x = 0; x < expressions.length; x++){
                 astExpressions.push(expressions[x]);
