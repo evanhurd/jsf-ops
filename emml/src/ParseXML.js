@@ -15,7 +15,7 @@ function ParseXML(xmlString){
 		var stack = [];
 		var parser = SAX.parser(false);
 		var rootTag = new XMLTag();
-		rootTag.tagName = "SCOPE";
+		rootTag.tagName = "DOCUMENT";
 		rootTag.type = TagTypes.ROOT;
 
 		parser.onerror = function (e) {

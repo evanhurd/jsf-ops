@@ -33,8 +33,7 @@ class FORTAG extends Tag {
             "body": []
           }
         };
-        console.log(JSON.stringify(ForStatement, null, 4));
-
+        
     	var childExpressions = this.compileChildren(scope);
     	for(var i = 0; i < childExpressions.length;i++){
     		ForStatement.body.body.push(childExpressions[i]);

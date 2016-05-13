@@ -23,8 +23,6 @@ class IFTAG extends Tag {
 
     	var ast = esprima.parse(condition);
 
-    	console.log(ast);
-
     	if(ast.body.length > 0){
     		var testExpression =  ast.body[0].expression;	
     	}else{

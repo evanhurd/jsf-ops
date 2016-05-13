@@ -1,12 +1,17 @@
 "use strict";
-
+var rightpad = require('right-padding');
+var NumberConverter = require("number-converter").NumberConverter;
+var numberConverter = new NumberConverter(NumberConverter.DECIMAL, NumberConverter.HEXADECIMAL)
 var tagIdACount = 0;
+
+const DOCUMENT = "D",
+      ELEMENT = "E",
+      TAG = "T",
+      SCOPE = "S";
 
 class Tag {
     constructor() {
-
-    	tagIdACount++;
-    	this.id = tagIdACount;
+    	this.id = getNextId(this.getIdPrefix());
 
         this.tagName = null;
         this.children = [];
@@ -46,6 +51,25 @@ class Tag {
         }
         return astExpressions;
     }
+
+    getIdPrefix(){
+        return TAG;
+    }
+
+    static get TYPES() {
+        return {
+            DOCUMENT : DOCUMENT,
+            ELEMENT : ELEMENT,
+            TAG : TAG,
+            SCOPE: SCOPE
+        }
+    }
 }
 
 module.exports = Tag;
+
+function getNextId(prefix){
+    tagIdACount++;
+    var numberId = rightpad(tagIdACount, 10, 0);
+    return prefix + numberConverter.convert(numberId);
+}

@@ -5,11 +5,11 @@ module.exports = ReadFile;
 function ReadFile(filePath){
 	return new Promise(function(resolve, reject){
 
-		fs.readFile(filePath, 'utf8', function (err,data) {
+		return fs.readFile(filePath, 'utf8', function (err,data) {
 		  if (err) {
-		    reject(err);
+		    return reject(err);
 		  }
-		  resolve(data);
+		  return resolve(data);
 		});
 
 	});

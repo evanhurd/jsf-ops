@@ -13,6 +13,7 @@
     "csv": "^0.4.6",
     "csvtojson": "^0.5.3",
     "mysql": "^2.10.2",
+    "right-padding": "0.0.4",
     "sequelize": "^3.19.3"
   }
 }

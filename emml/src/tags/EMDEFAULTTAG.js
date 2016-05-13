@@ -63,6 +63,10 @@ class CFDEFAULTTAG extends Tag {
 
     	return astExpressions;
     }
+
+    getIdTag(){
+        return "E";
+    }
 }
 
 module.exports = CFDEFAULTTAG;

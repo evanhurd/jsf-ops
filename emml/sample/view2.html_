@@ -1,0 +1,22 @@
+<div>
+	<var name="a" value="1 ${test}"/>
+	<!--<var name="b" value="1 ${a}"/>
+	
+	<div>${a + b}</div>
+
+	<loop var="i" from="1" to="10" >
+		<div>${i}</div>
+	</loop>-->
+
+	<if condition="1 == 1">
+		<div>Hello World</div>
+	</if>
+
+	<for init="var i = 0" condition="i <= 10" expression="i++">
+		${i}
+	</for>
+
+	<div>
+		<div><div><div><div><div><div><div><div><div><div><div><div>test</div></div></div></div></div></div></div></div></div></div></div></div>
+	</div>
+</div>

@@ -10,8 +10,13 @@
   "license": "ISC",
   "dependencies": {
     "ast-types": "^0.8.16",
+    "escodegen": "~1.8.0",
     "esprima": "^2.7.2",
+    "fibers": "^1.0.13",
+    "number-converter": "^1.2.1",
+    "recursive-readdir-sync": "^1.0.6",
+    "right-padding": "0.0.4",
     "sax": "^1.2.1",
-    "escodegen": "~1.8.0"
+    "wait.for": "^0.6.6"
   }
 }

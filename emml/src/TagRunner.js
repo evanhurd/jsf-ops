@@ -4,9 +4,9 @@ var ParseXML = require('./ParseXML');
 module.exports = TagRunner;
 
 function TagRunner(xmlObject){
-	//xmlObject.toString();
-	var tag = runXMLNode(xmlObject);
-	return tag;
+	return new Promise(function(resolve){
+		resolve(runXMLNode(xmlObject));
+	});
 }
 
 function runXMLNode(node){

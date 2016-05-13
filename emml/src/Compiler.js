@@ -15,10 +15,8 @@ function Compliler(tagTree){
 		};
 
 		//console.log(JSON.stringify(expressions, null, 4));
-		var js = escodegen.generate(programBody);
-
-		console.log(js);
-
+		//var js = escodegen.generate(programBody);
+		//console.log(programBody);
         resolve(programBody);
 	});
 }
