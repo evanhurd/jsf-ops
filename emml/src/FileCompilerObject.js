@@ -9,6 +9,7 @@ var Compiler = require('./Compiler');
 class FileCompilerObject{
 	
 	constructor(file){
+		file = file.replace(/\\/g,'/');
 		this.file = file;
 		this.content = null;
 		this.xmlTree = null;

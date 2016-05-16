@@ -47,6 +47,14 @@ class DOCUMENT extends Tag {
           "generator": false,
           "expression": false
         };
+
+        this.returnStatement = {
+            "type": "ReturnStatement",
+            "argument": {
+              "type": "Identifier",
+              "name": "$defineNode"
+            }
+          };
     }
 
     addFunctionDeclaration(functionName, expressions){
@@ -77,6 +85,8 @@ class DOCUMENT extends Tag {
             this.DocumentFunctionDeclaration.body.body.push(childExpressions[i]);
         }
 
+        this.DocumentFunctionDeclaration.body.body.push(this.returnStatement);
+        
         return [this.DocumentFunctionDeclaration];
     }
 
