@@ -6,7 +6,8 @@ const Indent= {
     DOCUMENTSCOPE : "$DocumentScope",
     DOCUMENTSCOPE_Constructor : "DocumentScope",
     DOCUMENTNODE : "DOCUMENTNODE",
-    INCLUDEDOCUMENT : 'INCLUDEDOCUMENT'
+    INCLUDEDOCUMENT : 'INCLUDEDOCUMENT',
+    NAMESPACE : "$NameSpace"
 }
 
 class AstStatements {
@@ -14,46 +15,76 @@ class AstStatements {
 
     }
 
-    DefineTemplate(documentName, expressions){
-      
-    }
+    DefineTemplate(templateID, namespace, name, expressions){
 
-    DefineDocument(documentId, expressions){
-
-        var scopeDec = {
-          "type": "VariableDeclaration",
-          "declarations": [
-            {
-              "type": "VariableDeclarator",
-              "id": {
+      var scopeDec = {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": Indent.DOCUMENTSCOPE
+            },
+            "init": {
+              "type": "NewExpression",
+              "callee": {
                 "type": "Identifier",
-                "name": Indent.DOCUMENTSCOPE
+                "name": Indent.DOCUMENTSCOPE_Constructor
               },
-              "init": {
-                "type": "NewExpression",
-                "callee": {
-                  "type": "Identifier",
-                  "name": Indent.DOCUMENTSCOPE_Constructor
-                },
-                "arguments": []
-              }
+              "arguments": []
             }
-          ],
-          kind : 'var'
-        };
+          }
+        ],
+        kind : 'var'
+      };
 
-        var rootNode = this.DefineNode(documentId, Indent.DOCUMENTNODE, null, {});
+      var rootNode = this.DefineNode(templateID, Indent.DOCUMENTNODE, null, {});
 
 
-        var returnExp = this.ReturnIdentifer(Indent.DOCUMENTSCOPE);
-        var childExpressions = [scopeDec, rootNode];
-        for(var i = 0; i < expressions.length; i++) {
-            childExpressions.push(expressions[i]);
+      var returnExp = this.ReturnIdentifer(Indent.DOCUMENTSCOPE);
+      var childExpressions = [scopeDec, rootNode];
+      for(var i = 0; i < expressions.length; i++) {
+          childExpressions.push(expressions[i]);
+      }
+      childExpressions.push(returnExp);
+      var functionDec = this.FunctionDecleration(templateID, childExpressions);
+
+      var epxression = {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "MemberExpression",
+            "computed": false,
+            "object": {
+              "type": "Identifier",
+              "name": Indent.DOCUMENTSCOPE_Constructor
+            },
+            "property": {
+              "type": "Identifier",
+              "name": Indent.NAMESPACE
+            }
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "value": namespace,
+              "raw": "'"+namespace+"'"
+            },
+            {
+              "type": "Literal",
+              "value": name,
+              "raw": "'"+name+"'"
+            },
+            {
+              "type": "Identifier",
+              "name": templateID
+            }
+          ]
         }
-        childExpressions.push(returnExp);
-        var functionDec = this.FunctionDecleration(documentId, childExpressions);
-
-        return functionDec;
+      };
+      return [functionDec,epxression]
     }
 
     DefineNode(nodeId, nodeName, parentId, attributes){

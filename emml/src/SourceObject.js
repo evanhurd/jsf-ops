@@ -10,34 +10,11 @@ class SourceObject{
 		this.sourceAst = {
 		  "type": "Program",
 		  "body": [
-		    {
-		  
-		      "type": "VariableDeclaration",
-		      "declarations": [
-		        {
-		      
-		          "type": "VariableDeclarator",
-		          "id": {
-		        
-		            "type": "Identifier",
-		            "name": "VIEW"
-		          },
-		          "init": {
-		        
-		            "type": "ObjectExpression",
-		            "properties": []
-		          }
-		        }
-		      ],
-		      "kind": "var"
-		    }
+		    
 		  ],
 		  "sourceType": "script"
 		};
-		this.rootObjectExpression = this.sourceAst.body[0].expression;
-		this.objectFolders = {
-			$_astProperties :  this.sourceAst.body[0].declarations[0].init.properties
-		};
+
 	}
 
 
@@ -46,95 +23,24 @@ class SourceObject{
 			this.processFile(this.files[i]);
 		}
 
+        //console.log(JSON.stringify(this.sourceAst, null, 4));
 		var js = escodegen.generate(this.sourceAst);
-		//console.log(JSON.stringify(this.sourceAst, null, 4));
+		
 		console.log(js);
 	}
 
 
 	processFile(file){
-		var filePath = file.file.slice(this.directory.length, file.length);
-		var paths = filePath.split('/');
-
-		var fileName = paths.pop().split('.')[0];
-
-		var currentFolder = this.objectFolders;
-		for(var i = 0; i < paths.length; i++){
-			if(paths[i].trim() == '') continue;
-			var currentFolder = this.addNewFolder(currentFolder, paths[i]);
-		}
-
-		var expression = {
-	        "type": "FunctionExpression",
-	        "id": null,
-	        "params": [],
-	        "defaults": [],
-	        "body": {
-	          "type": "BlockStatement",
-	          "body": file.astTree.body[0].body.body
-	        },
-	        "generator": false,
-	        "expression": false
-	      };
-
-		this.addNewFolderItem(currentFolder, fileName, expression);
-	}
 
 
-	addNewFolder(parent, name){
-		if(parent[name] != undefined) return parent[name];
+        //console.log(JSON.stringify(file.astTree, null, 4));
 
-		var property = {
-            "type": "Property",
-            "key": {
-              "type": "Literal",
-              "value": name,
-              "raw": "\"" + name + "\""
-            },
-            "computed": false,
-            "value": {
-              "type": "ObjectExpression",
-              "properties": []
-            },
-            "kind": "init",
-            "method": false,
-            "shorthand": false
-		};
+        var expressions = file.astTree.body;
+        for(var i = 0; i < expressions.length; i++){
+            //console.log(expressions);
+            this.sourceAst.body.push(expressions[i]);
+        }
 
-		parent[name] = {
-			$_astProperties : property.value.properties
-		};
-
-		parent.$_astProperties.push(property);
-
-		return parent[name];
-	}
-
-	addNewFolderItem(parent, name, ast){
-
-		var property = {
-            "type": "Property",
-            "key": {
-              "type": "Literal",
-              "value": name,
-              "raw": "\"" + name + "\""
-            },
-            "computed": false,
-            "value": ast,
-            "kind": "init",
-            "method": false,
-            "shorthand": false
-		};
-
-		parent[name] = {
-			$_astProperty : property,
-			ast : ast,
-			name : name
-		};
-
-		parent.$_astProperties.push(property);
-
-		return parent[name]
 	}
 
 } 
