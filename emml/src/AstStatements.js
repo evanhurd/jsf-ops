@@ -4,7 +4,9 @@ var esprima = require('esprima');
 const Indent= {
     DEFINENODE :"$defineNode",
     DOCUMENTSCOPE : "$DocumentScope",
-    DOCUMENTSCOPE_Constructor : "DocumentScope"
+    DOCUMENTSCOPE_Constructor : "DocumentScope",
+    DOCUMENTNODE : "DOCUMENTNODE",
+    INCLUDEDOCUMENT : 'INCLUDEDOCUMENT'
 }
 
 class AstStatements {
@@ -12,7 +14,11 @@ class AstStatements {
 
     }
 
-    DefineDocument(documentName, expressions){
+    DefineTemplate(documentName, expressions){
+      
+    }
+
+    DefineDocument(documentId, expressions){
 
         var scopeDec = {
           "type": "VariableDeclaration",
@@ -32,17 +38,20 @@ class AstStatements {
                 "arguments": []
               }
             }
-          ]
-        }
+          ],
+          kind : 'var'
+        };
+
+        var rootNode = this.DefineNode(documentId, Indent.DOCUMENTNODE, null, {});
 
 
         var returnExp = this.ReturnIdentifer(Indent.DOCUMENTSCOPE);
-        var childExpressions = [scopeDec];
+        var childExpressions = [scopeDec, rootNode];
         for(var i = 0; i < expressions.length; i++) {
             childExpressions.push(expressions[i]);
         }
         childExpressions.push(returnExp);
-        var functionDec = this.FunctionDecleration(documentName, childExpressions);
+        var functionDec = this.FunctionDecleration(documentId, childExpressions);
 
         return functionDec;
     }
@@ -89,6 +98,46 @@ class AstStatements {
         var ast = esprima.parse("(" + json + ")");
 
         if(ast.body.length > 0) expression.expression.arguments.push(ast.body[0].expression);
+
+        return expression;
+    }
+
+    IncludeDocument(nodeId, path, parentId){
+      var expression = {
+            type: "ExpressionStatement",
+            expression:{
+                "type": "CallExpression",
+                "callee": {
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": {
+                    "type": "Identifier",
+                    "name": Indent.DOCUMENTSCOPE
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "name": Indent.INCLUDEDOCUMENT
+                  }
+                },
+                "arguments": [
+                    {
+                    "type": "Literal",
+                    "value": nodeId,
+                    "raw": "\"" + nodeId + "\"" 
+                    },
+                    {
+                    "type": "Literal",
+                    "value": path,
+                    "raw": "\"" + path + "\""
+                    },
+                    {
+                    "type": "Literal",
+                    "value": parentId,
+                    "raw" : "\"" + parentId + "\""
+                    }
+                ]
+            }
+        };
 
         return expression;
     }

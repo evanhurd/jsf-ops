@@ -1,4 +1,18 @@
-<div>
+<template name="view" namespace="views.test">
+	<attribute name="test" type="string" default="1" require="false"/>
+
+	<include template="view"/>
 	<var name="color" value="test"/>
-	<div style="color:${color}" onclick="color='blue';">Click Me!</div>
-</div>
+	<div style="color:${color}" onclick="color='blue';">Click Me! ${color}</div>
+</template>
+
+<function name="testFunction" namespace="views.test">
+	<argument name="test"/>
+	<import namespace="test.otherview" as="otherview">
+	<script>
+		var new 
+
+
+	</script>
+	<return "test">
+</function>

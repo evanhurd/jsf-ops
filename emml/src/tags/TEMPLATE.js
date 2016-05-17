@@ -2,15 +2,11 @@
 var Tag = require("./Tag.js");
 var astStatements = require('../AstStatements');
 
-var scopeIdCounter = 0;
-
-class DOCUMENT extends Tag {
+class TEMPLATE extends Tag {
 
 	init(){
-        this.tagName = 'DOCUMENT';
-        this.ownerDocument = this;
+        this.tagName = 'TEMPLATE';
     }
-
 
     compile(){
         var childExpressions = this.compileChildren();        
@@ -19,8 +15,8 @@ class DOCUMENT extends Tag {
     }
 
     getIdPrefix(){
-        return "D";
+        return "T";
     }
 }
 
-module.exports = DOCUMENT;
+module.exports = TEMPLATE;

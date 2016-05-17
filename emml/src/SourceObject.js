@@ -11,20 +11,6 @@ class SourceObject{
 		  "type": "Program",
 		  "body": [
 		    {
-		      "type": "ExpressionStatement",
-		      "expression": {
-		        "type": "ObjectExpression",
-		        "properties": []
-		      }
-		    }
-		  ],
-		  "sourceType": "script"
-		};
-
-		this.sourceAst = {
-		  "type": "Program",
-		  "body": [
-		    {
 		  
 		      "type": "VariableDeclaration",
 		      "declarations": [
@@ -79,29 +65,17 @@ class SourceObject{
 		}
 
 		var expression = {
-	        "range": [
-	          8,
-	          20
-	        ],
 	        "type": "FunctionExpression",
 	        "id": null,
 	        "params": [],
 	        "defaults": [],
 	        "body": {
-	          "range": [
-	            18,
-	            20
-	          ],
 	          "type": "BlockStatement",
 	          "body": file.astTree.body[0].body.body
 	        },
 	        "generator": false,
 	        "expression": false
 	      };
-
-	    
-
-	    //console.log(JSON.stringify(expression, null, 4));
 
 		this.addNewFolderItem(currentFolder, fileName, expression);
 	}
