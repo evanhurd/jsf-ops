@@ -1,7 +1,7 @@
  "use strict";
 var Tag = require("./Tag.js");
 var astStatements = require('../AstStatements');
-var Template = require('./Template');
+var Template = require('./TEMPLATE');
 
 var scopeIdCounter = 0;
 
@@ -38,9 +38,10 @@ class DOCUMENT extends Tag {
                 this.defaultTemplate.attributes ={
                     NAMESPACE : this.id
                 };
+                this.addChild(this.defaultTemplate);
                 this.defaultTemplate.init();
             }
-            this.addChild(this.defaultTemplate);
+            
             this.defaultTemplate.addChild(tag);
         }
     }

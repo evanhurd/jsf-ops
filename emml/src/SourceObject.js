@@ -1,5 +1,8 @@
 'use strict';
 var escodegen = require('escodegen');
+var scoper = require("./astFills/scoper.js");
+var getterSetter = require("./astFills/getterSetter.js");
+var binaryExpressify = require("./astFills/binaryExpressify.js");
 
 
 class SourceObject{
@@ -22,11 +25,14 @@ class SourceObject{
 		for(var i = 0; i < this.files.length; i++){
 			this.processFile(this.files[i]);
 		}
-
         //console.log(JSON.stringify(this.sourceAst, null, 4));
-		var js = escodegen.generate(this.sourceAst);
-		
-		console.log(js);
+       	var ast = this.sourceAst;
+        //var ast = scoper(ast);
+        //var ast = getterSetter(ast);
+        //var ast = binaryExpressify(ast);
+
+		var js = escodegen.generate(ast);
+		return js;
 	}
 
 

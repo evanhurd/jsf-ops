@@ -1,9 +1,15 @@
 var SourceRunner = require('./SourceRunner');
+var WriteFile = require('./WriteFile');
 
+var srcDir = "../sample";
+var outputFile = "../sample/app.js";
 
-SourceRunner('../sample')
+SourceRunner(srcDir)
 .then(sourceObject =>{
-	sourceObject.compile();
+	return sourceObject.compile();
+})
+.then(src => {
+	return WriteFile(outputFile, src);
 })
 .catch(reportError)
 
