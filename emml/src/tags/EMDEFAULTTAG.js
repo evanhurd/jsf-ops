@@ -10,6 +10,9 @@ class CFDEFAULTTAG extends Tag {
 	init(xmlNode){
 		this.tagName = xmlNode.tagName;
 		this.isSelfClosing = isTagSelfClosing(this.tagName || '');
+        this.sourceLineNumber = xmlNode.sourceLineNumber;
+        this.sourceColumnNumber = xmlNode.sourceColumnNumber;
+
 	}
 
     ontagstart(){
@@ -29,7 +32,9 @@ class CFDEFAULTTAG extends Tag {
     		astExpressions.push(childExpressions[i]);
     	}
 
-    	return astExpressions;
+        var TryBlock = astStatements.DocumentScopeTryBlock(astExpressions, this.sourceLineNumber, this.sourceColumnNumber);
+
+    	return [TryBlock];
     }
 
     getIdTag(){

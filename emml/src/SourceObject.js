@@ -3,6 +3,7 @@ var escodegen = require('escodegen');
 var scoper = require("./astFills/scoper.js");
 var getterSetter = require("./astFills/getterSetter.js");
 var binaryExpressify = require("./astFills/binaryExpressify.js");
+var parseTemplateStrings = require("./astFills/parseTemplateStrings.js");
 
 
 class SourceObject{
@@ -27,7 +28,8 @@ class SourceObject{
 		}
         //console.log(JSON.stringify(this.sourceAst, null, 4));
        	var ast = this.sourceAst;
-        //var ast = scoper(ast);
+        var ast = scoper(ast);
+        var ast = parseTemplateStrings(ast);
         //var ast = getterSetter(ast);
         //var ast = binaryExpressify(ast);
 

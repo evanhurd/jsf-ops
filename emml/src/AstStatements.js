@@ -7,12 +7,14 @@ const Indent= {
     DOCUMENTSCOPE_Constructor : "DocumentScope",
     DOCUMENTNODE : "DOCUMENTNODE",
     INCLUDEDOCUMENT : 'INCLUDEDOCUMENT',
-    NAMESPACE : "$NameSpace"
+    NAMESPACE : "$NameSpace",
+    TEMPLATE : "$Template",
+    SETVALUE : "$setValue"
 }
 
 class AstStatements {
     constructor(){
-
+      this.Idents = Indent;
     }
 
     DefineTemplate(templateID, namespace, name, expressions){
@@ -38,17 +40,18 @@ class AstStatements {
         ],
         kind : 'var'
       };
+      
 
       var rootNode = this.DefineNode(templateID, Indent.DOCUMENTNODE, null, {});
-
-
-      var returnExp = this.ReturnIdentifer(Indent.DOCUMENTSCOPE);
-      var childExpressions = [scopeDec, rootNode];
+      
+      var childExpressions = [rootNode];
       for(var i = 0; i < expressions.length; i++) {
           childExpressions.push(expressions[i]);
       }
-      childExpressions.push(returnExp);
-      var functionDec = this.FunctionDecleration(templateID, childExpressions);
+      var templateExpression = this.DocumentScopeTemplateExpression(childExpressions);
+      var returnExp = this.ReturnIdentifer(Indent.DOCUMENTSCOPE);
+
+      var functionDec = this.FunctionDecleration(templateID, [scopeDec, templateExpression, returnExp]);
 
       var epxression = {
         "type": "ExpressionStatement",
@@ -133,6 +136,46 @@ class AstStatements {
         return expression;
     }
 
+    DocumentScopeTemplateExpression(expressions){
+    //DocumentScope.template = function($DocumentScope){}
+      return {
+          "type": "ExpressionStatement",
+          "expression": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": Indent.DOCUMENTSCOPE
+              },
+              "property": {
+                "type": "Identifier",
+                "name": Indent.TEMPLATE
+              }
+            },
+            "right": {
+              "type": "FunctionExpression",
+              "id": null,
+              "params": [
+                {
+                  "type": "Identifier",
+                  "name": "$DocumentScope"
+                }
+              ],
+              "defaults": [],
+              "body": {
+                "type": "BlockStatement",
+                "body": expressions
+              },
+              "generator": false,
+              "expression": false
+            }
+          }
+        };
+    }
+
     IncludeDocument(nodeId, path, parentId){
       var expression = {
             type: "ExpressionStatement",
@@ -199,6 +242,169 @@ class AstStatements {
               "name": name
             }
           };
+    }
+
+    Literal(name){
+        return {
+          "type": "Literal",
+          "value": name,
+          "raw": "'"+name+"'"
+        }
+    }
+
+    ReturnScopeAssignmentExpression(left, right){
+     
+      if(left.type == 'Identifier'){
+        var left = this.Literal(left.name);
+      }else if(left.type == "Literal"){
+        var left = this.Literal(left.name);
+      }else{
+        var left = this.Literal(left.toString());
+      }
+
+       var args = [left, right];
+
+      return {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "MemberExpression",
+            "computed": false,
+            "object": {
+              "type": "Identifier",
+              "name": Indent.DOCUMENTSCOPE
+            },
+            "property": {
+              "type": "Identifier",
+              "name": Indent.SETVALUE
+            }
+          },
+          "arguments": args
+        }
+      };
+    }
+
+    ReturnAssignmentExpression(left, right){
+      return {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "AssignmentExpression",
+          "operator": "=",
+          "left": left,
+          "right": right
+        }
+      };
+    }
+
+    ScopeGetExpression(name){
+      return {
+        "type": "CallExpression",
+        "callee": {
+          "type": "MemberExpression",
+          "computed": false,
+          "object": {
+            "type": "Identifier",
+            "name": Indent.DOCUMENTSCOPE
+          },
+          "property": {
+            "type": "Identifier",
+            "name": "$getValue"
+          }
+        },
+        "arguments": [
+          {
+            "type": "Literal",
+            "value": name,
+            "raw": "'"+name+"'"
+          }
+        ]
+      };
+    }
+
+    BinaryExpression(operator, left, right){
+      return {
+          "type": "BinaryExpression",
+          "operator": operator,
+          "left": left,
+          "right": right
+        };
+    }
+
+    DocumentScopeTryBlock(expressions, lineNumber, columnNumber){
+      var lineNumber = lineNumber || 0;
+      var columnNumber = columnNumber || 0;
+      return {
+
+        "type": "TryStatement",
+        "block": {
+
+          "type": "BlockStatement",
+          "body": expressions
+        },
+        "guardedHandlers": [],
+        "handlers": [
+          {
+
+            "type": "CatchClause",
+            "param": {
+
+              "type": "Identifier",
+              "name": "err"
+            },
+            "body": {
+
+              "type": "BlockStatement",
+              "body": [
+                {
+
+                  "type": "ExpressionStatement",
+                  "expression": {
+
+                    "type": "CallExpression",
+                    "callee": {
+
+                      "type": "MemberExpression",
+                      "computed": false,
+                      "object": {
+
+                        "type": "Identifier",
+                        "name": "$DocumentScope"
+                      },
+                      "property": {
+
+                        "type": "Identifier",
+                        "name": "throw"
+                      }
+                    },
+                    "arguments": [
+                      {
+
+                        "type": "Identifier",
+                        "name": "err"
+                      },
+                      {
+
+                        "type": "Literal",
+                        "value": lineNumber,
+                        "raw": lineNumber,
+                      },
+                      {
+
+                        "type": "Literal",
+                        "value": columnNumber,
+                        "raw": columnNumber,
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "handler": null,
+        "finalizer": null
+      }
     }
 }
 

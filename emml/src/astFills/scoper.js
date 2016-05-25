@@ -1,11 +1,7 @@
-/*
-Turn all object.key to $scope.object.key
-*/
-var rootScopeIdentifer = "$DocumentScope";
-var escodegen = require('escodegen');
-
-var esprima = require('esprima');
 var astMap = require('./astMap.js');
+var esprima = require('esprima');
+var escodegen = require('escodegen');
+var AstStatements = require('../AstStatements');
 
 module.exports = function(ast){
 	return scope(ast);
@@ -13,264 +9,120 @@ module.exports = function(ast){
 
 function scope(ast){
 
-	var ast1 = esprima.parse(`
+	/*var ast1 = esprima.parse(`
+		for(var i = 0; i < 10; i++){
 
-function test(obj){
-	obj.test;
-
-	obj.test(obj);
-
-	obj();
-
-}
+		}
 	`);
 
 	//console.log(escodegen.generate(ast));
 
-	var map = new astMap(ast);
+
 	
-	scopeFunctionArguments(map);
-	scopeVariableDeclaration(map);
-	scopeIdentifiers(map);
+	scopeVariableDeclerations_IN_ForStatements(ast1);
+	scopeVariableDeclerations(ast1);
+	scopeGetters(ast1);
+	//console.log(escodegen.generate(ast1));
 
 
+	//console.log(JSON.stringify(ast1, null, 4));
+	//scopeFunction(ast1);
+	//scopeVariableDeclaration(map);
+	//scopeIdentifiers(map);*/
 	return ast;
 }
 
-function scopeIdentifiers(map){
-	var results = map.find(/(FunctionDeclaration|FunctionExpression).*(Identifier)/);
+function scopeGetters(ast){
+	var map = new astMap(ast, {
+		includeIdentifierNames: true,
+		includeLiteralNames: false
+	});
+	console.log(map.dictionary.paths);
+
+	var results = map.find(/(Identifier\[name\=\$setValue\])/);
+	var scopeables = [];
+	
+	for(var i = 0; i < results.length; i++){scopeables
+		var Identifier = results[i][0].node;
+		if(Identifier.$parent.type != 'MemberExpression') continue;
+		var MemberExpression = Identifier.$parent;
+		if(MemberExpression.object.name !== '$DocumentScope') continue;
+		scopeables.push(MemberExpression.$parent.arguments[0].value);
+	}
+
+	var results = map.find(/(Literal)/);
+
+	
+	for(var i = 0; i < results.length; i++){
+		var Literal = results[i][0].node;
+		console.log(Literal);
+		if(scopeables.indexOf(Literal.value) == -1)continue;
+		//console.log(Literal.$parent.$parent);
+
+		if(Literal.$parent.$parent.type == 'CallExpression'
+			&& Literal.$parent.$parent.callee.type == 'MemberExpression'
+			&& Literal.$parent.$parent.callee.object.name == "$DocumentScope"){
+			continue;
+		}
+
+		var GetExpression = AstStatements.ScopeGetExpression(Literal.value);
+		Literal.$parent[Literal.$key] = GetExpression;
+	}
+}
+
+function scopeVariableDeclerations_IN_ForStatements(ast){
+	var map = new astMap(ast);
+	var results = map.find(/(ForStatement)\/init\/(VariableDeclaration)/);
+	//console.log(results);
+	for(var i = 0; i < results.length; i++){
+		var ForStatement = results[i][0].node;
+		var BodyArray = ForStatement.$parent;
+
+		var VariableDeclaration = results[i][1].node;
+		var declarations = VariableDeclaration.declarations;
+		for(var x = 0; x < declarations.length; x++){
+			var Declarator = declarations[x];
+			var AssignmentExpression = AstStatements.ReturnScopeAssignmentExpression(Declarator.id, Declarator.init);
+			BodyArray.splice(BodyArray.indexOf(ForStatement), 0, AssignmentExpression);
+		}
+
+		ForStatement.init = null;
+	}
+}
+
+
+function scopeVariableDeclerations(ast){
+	var map = new astMap(ast);
+	var results = map.find(/(VariableDeclarator)/);
+	//console.log(results);
+	for(var i = 0; i < results.length; i++){
+		var Declarator = results[i][0].node;
+		var Declarators = Declarator.$parent;
+		var Declaration = Declarators.$parent;
+		var BodyArray = Declaration.$parent;
+
+		var AssignmentExpression = AstStatements.ReturnScopeAssignmentExpression(Declarator.id, Declarator.init);
+		BodyArray.splice(BodyArray.indexOf(Declaration) + 1, 0, AssignmentExpression);
+
+		if(Declarators.indexOf(Declarator) >= 0)
+			Declarators.splice(Declarators.indexOf(Declarator), 1);
+
+		if(Declarators.length == 0 && BodyArray.indexOf(Declaration) >= 0)
+			BodyArray.splice(BodyArray.indexOf(Declaration), 1);
+
+		//var AssignmentExpression = AstStatements.ReturnAssignmentExpression();
+		//console.log(Decleration);
+	}
+}
+
+function scopeFunction(ast){
+	var map = new astMap(ast);
+
+	var results = map.find(/(FunctionDeclaration|FunctionExpression)\/params\/.*\/(Identifier)/);
 
 	for(var i = 0; i < results.length; i++){
-
-		var scopeMe = true;
-		//var scopeName = CreateOrGetScope(scope);
-		var variableDeclaration = results[i][1].node;
-		var scope = results[i][0].node;
-		var scopeName = rootScopeIdentifer;
-		var varName = variableDeclaration.name;
-
-		var parentNode = variableDeclaration._$parent;
-		var parentKey = variableDeclaration._$parentKey;
-		var grandParentKey = variableDeclaration._$grandParentKey;
-
-
-
-		if(parentNode.type == "MemberExpression" && parentKey == "property" && parentNode.computed == true){
-			var scopeMe = true;
-		}
-
-		if(parentNode.type == "MemberExpression" && parentKey == "object"){
-			var scopeMe = true;
-		}
-
-		if(parentNode.type == "IfStatement"){
-			var scopeMe = true;
-		}
-
-		if(parentNode.type == "ConditionalExpression"){
-			var scopeMe = true;
-		}
-
-		if(parentNode.type == "CallExpression" && grandParentKey == "arguments"){
-			var scopeMe = true;
-		}
-
-		if(parentNode.type == "CallExpression" && parentKey == "callee"){
-			var scopeMe = true;
-		}
-
-		if(parentNode.type == "FunctionDeclaration" && parentKey == "id"){
-			var scopeMe = false;
-		}
-				
-		if(parentNode.type == "FunctionDeclaration" && parentKey != "id"){
-
-			var scopeMe = false;
-		}
-
-		if(varName == scopeName){
-			var scopeMe = false;
-		}
-
-		if(scopeMe && scope.scopeVariables.indexOf(varName) >= 0){
-			var scopeMe = true;
-		}else{
-			var scopeMe = false;
-		}
-
-		if(scopeMe == true){
-
-			variableDeclaration.type = "MemberExpression";
-			variableDeclaration.object = {
-              "type": "Identifier",
-              "name": scopeName
-            };
-            variableDeclaration.property = {
-              "type": "Identifier",
-              "name": varName
-            };
-		}
-
-	}
-}
-
-function getIdentifierParent(expressionPath){
-
-}
-
-
-function scopeIdentifier(node){
-	if(node.name == "DOM") return false;
-	node.type = "MemberExpression";
-	node.computed = false;
-	node.object = {
-		type : "Identifier",
-		name : rootScopeIdentifer,
-	};
-	node.property ={
-		type : "Identifier",
-		name : node.name
-	};
-	node.name = undefined;
-	delete node.name;
-}
-
-function scopeVariableDeclaration(map){
-
-	var results = map.find(/(FunctionDeclaration|FunctionExpression).*(VariableDeclaration)\/declarations\/[0-9]+\/VariableDeclarator\/id\/Identifier/);
-
-	for(var i = 0; i < results.length; i++){
-
-		var scope = results[i][0].node;
-		var variableDeclaration = results[i][1].node;
-
-		//var scope = findRootScope(variableDeclaration);
-		var scopeName = rootScopeIdentifer;
-
-
-
-		for(var x = 0; x < variableDeclaration.declarations.length;x++){
-			var declarator = variableDeclaration.declarations[x];
-
-
-			var init = declarator.init || {
-              "type": "Literal",
-              "value": null,
-              "raw": "null"
-            };
-
-			var ExpressionStatement = {
-	            "type": "ExpressionStatement",
-	            "expression": {
-	              "type": "AssignmentExpression",
-	              "operator": "=",
-	              "left": {
-	                "type": "MemberExpression",
-	                "computed": false,
-	                "object": {
-	                  "type": "Identifier",
-	                  "name": scopeName
-	                },
-	                "property": {
-	                  "type": "Identifier",
-	                  "name": declarator.id.name
-	                }
-	              },
-	              "right": init
-	            }
-	          };
-
-	        scope.body.body.splice(1,0,ExpressionStatement);
-	        scope.scopeVariables.push(declarator.id.name);
-		}
-
-		var declarationIndex = scope.body.body.indexOf(variableDeclaration);
-		scope.body.body.splice(declarationIndex,1);
-	}
-}
-
-function scopeFunctionArguments(map){
-	var identifers = map.find(/(FunctionDeclaration|FunctionExpression)\/params\/[0-9]+\/(Identifier)/g);
-
-	for(var i = 0; i < identifers.length; i++){
-		var scope = identifers[i][0].node;
-		var identifier = identifers[i][1].node;
-
-		//var scope = findRootScope(identifier);
-		var scopeName = rootScopeIdentifer;
-
-
-		var ExpressionStatement = {
-            "type": "ExpressionStatement",
-            "expression": {
-              "type": "AssignmentExpression",
-              "operator": "=",
-              "left": {
-                "type": "MemberExpression",
-                "computed": false,
-                "object": {
-                  "type": "Identifier",
-                  "name": scopeName
-                },
-                "property": {
-                  "type": "Identifier",
-                  "name": identifier.name
-                }
-              },
-              "right": {
-                "type": "Identifier",
-                "name": identifier.name
-              }
-            }
-          };
-
-        scope.scopeVariables.push(identifier.name);
-        scope.body.body.splice(1,0,ExpressionStatement);
-
-	}
-}
-
-var scopeIdCount = 0;
-function CreateOrGetScope(scope){
-
-	return findRootScope(scope);
-
-	if(scope._$scopeName) return scope._$scopeName;
-	scopeIdCount++;
-
-	var scopeName = "_$scope"+scopeIdCount;
-	var VariableDeclaration = {
-        "type": "VariableDeclaration",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "id": {
-              "type": "Identifier",
-              "name": scopeName
-            },
-            "init": null
-          }
-        ],
-        "kind": "var"
-      };
-
-     scope._$scopeName = scopeName;
-     scope._$scopeVariables = [];
-     scope.body.body.splice(0,0,VariableDeclaration);
-     return scope._$scopeName;
-}
-
-function findRootScope(node){
-
-	var parent = node;
-
-	while(parent.scopeName == undefined){
-		if(!parent._$parent){
-			throw "Fatal Error locating scope! Could not find scope.";
-		}
-
-		parent = parent._$parent;
+		var FunctionExpression = results[i][0];
+		var Identifier = results[i][0];
 	}
 
-	return parent;
 }

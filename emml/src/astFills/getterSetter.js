@@ -1,13 +1,32 @@
-/*
-Turn all object.key to $scope.object.key
-*/
-var rootScopeIdentifer = "_$scope";
-var escodegen = require('escodegen');
 
-var esprima = require('esprima');
 var astMap = require('./astMap.js');
 
 module.exports = function(ast){
+	return getterSetter(ast);
+}
+
+function getterSetter(ast){
+
+	var assignmentExpresions = getAssignmentExpressions(ast);
+	console.log(assignmentExpresions.length);
+
+	for(var i = 0; i < assignmentExpresions.length; i++){
+		convertAssignmentExpressionToSetter(assignmentExpresions[i]);
+	}
+
+
+	var memberExpressions = findAllRootMemberExpressions(ast);
+
+	for(var i = 0; i < memberExpressions.length; i++){
+		if(memberExpressions[i].object.name.substring(0, "_$scope".length) == "_$scope"){
+			convertMemberExpressionToGetter(memberExpressions[i]);
+		}
+	}
+
+	return ast;
+}
+
+/*module.exports = function(ast){
 	return getterSetter(ast);
 }
 
@@ -134,4 +153,4 @@ function flatten(search){
 	}
 
 	return ret;
-}
+}*/

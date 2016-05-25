@@ -5,8 +5,8 @@ var ConfigIncludeNames = false;
 
 function ASTMap(ast, includeNames){
 	this.ast = ast;
-	ConfigIncludeNames = includeNames || false;
-	this.map = generateMap(ast);
+	this.options = arguments[1] || {};
+	this.dictionary = generateDictionary(ast, this.options);
 }
 
 
@@ -14,8 +14,8 @@ ASTMap.prototype.find = function(reg){
 	var result = [];
 	var nodesFound = [];
 
-	for(i = 0; i < this.map.paths.length; i++){
-		var path = this.map.paths[i];
+	for(i = 0; i < this.dictionary.paths.length; i++){
+		var path = this.dictionary.paths[i];
 		
 		var capture = regexFind(reg, path);
 		if(capture.length > 0) {
@@ -23,7 +23,7 @@ ASTMap.prototype.find = function(reg){
 			var node = null
 			for(var x = 0; x < capture.length;x++){
 				var node = this.getNodeByPath(capture[x].key);
-				if(node && nodesFound.indexOf(node) == -1 || 1 == 1){
+				if(node && nodesFound.indexOf(node) == -1){
 					captureGroup.push({
 						path : capture[x].key,
 						node: node
@@ -38,12 +38,12 @@ ASTMap.prototype.find = function(reg){
 }
 
 ASTMap.prototype.getNodeByPath = function(path){
-	if(path[path.length-1] == '/'){
+	/*if(path[path.length-1] == '/'){
 		var path = path.slice(0, path.length-1);
-	}
+	}*/
 	
-	if(this.map.keys[path]){
-		return this.map.keys[path];
+	if(this.dictionary.keys[path]){
+		return this.dictionary.keys[path];
 	}else{
 		return null;
 	}
@@ -86,69 +86,62 @@ function regexFind(regex, regexText ){
 
 
 
-function generateMap(ast, mapArray){
+function generateDictionary(ast, options){
 	
 	var mapArray = [];
 	var mapKeys = {};
-	
-	var loop = function(mapArray, node, parentPath, parentKey, grandParentNode, grandParentKey){
-		var path = parentPath;
+
+	setProperty(ast, '$path', '');
+	setProperty(ast, '$key', null);
+	setProperty(ast, '$parent', null);
+
+	var loop = function(node){
 
 		for(var key in node){
-			
-			if( key == 'type' ){
+			if(typeof node[key] == 'object' && node[key] != null){
+				var type = (node.type ? node.type + '/' + key : null) || key;
+				var path = node.$path + '/' + type;
+				
+				setProperty(node[key], '$path', path);
+				setProperty(node[key], '$key', key);
+				setProperty(node[key], '$parent', node);
 
-				if(new Number(parentKey) && parentKey >= 0){
-					parentPath += '/' + grandParentKey;
-				}
-
-				path = parentPath + '/'+ parentKey + '/' + node[key];
-				mapArray.push(path);
-				mapKeys[path] = node;
-			}
-
-			
-			if(parentKey == 'body' && new Number(key) && key >= 0 ){
-				//path = parentPath + '/'+key;
-				//mapArray.push(path);
-				//mapKeys[path] = node;
-			}
-
-
-			if(key == 'value' && ConfigIncludeNames){
-				mapArray.push(path +'[value="'+node[key]+'"]');
-				mapKeys[path +'[value="'+node[key]+'"]'] = node;
-			}
-			if(key == 'name' && ConfigIncludeNames){
-				mapArray.push(path +'[name="'+node[key]+'"]');
-				mapKeys[path +'[name="'+node[key]+'"]'] = node;
-			}
-
-			if(typeof node[key] == 'object' && key !='_parent'){
-				if(key.substring(0,2) != '_$') {
-					loop(node[key], path, key, node, parentKey);
-				}
-
-				if(node[key]){
-					if(node.length){
-						node[key]._$parent = grandParentNode;
-						node[key]._$parentKey = grandParentKey;
-						node[key]._$grandParentKey = grandParentNode._$parentKey;
-					}else{
-						node[key]._$parent = node;
-						node[key]._$parentKey = key;
-						node[key]._$grandParentKey = parentKey;
+				if(node[key].type){
+					var path = path + '/' + node[key].type;
+					if(options.includeIdentifierNames && node[key].type == "Identifier"){
+						path += `[name=${node[key].name}]`;
 					}
+
+					if(options.includeLiteralNames && node[key].type == "Literal"){
+						path += `[value=${node[key].value}]`;
+					}
+					if(mapArray.indexOf(path) == -1) mapArray.push(path);
+					mapKeys[path] = node[key];
 				}
+
+				loop(node[key]);
 			}
 		}
-		
-	}.bind(null, mapArray);
+	};
 	
-	loop(ast, '', '', '');
+	loop(ast);
 	
 	return {
 		paths : mapArray,
 		keys : mapKeys
 	};
+}
+
+
+function setProperty(obj, key, value){
+	Object.defineProperty(obj, key, {
+	  enumerable: false,
+	  configurable: true,
+	  writable: true,
+	  value: value
+	});
+}
+
+function getPath(node){
+
 }
