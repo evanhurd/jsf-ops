@@ -2,7 +2,7 @@ function T59682F00() {
     var $DocumentScope = new DocumentScope();
     $DocumentScope.$Template = function ($DocumentScope) {
         $DocumentScope.$defineNode('T59682F00', 'DOCUMENTNODE', null, {});
-        var color = 'test';
+        var color = 'red';
         try {
             $DocumentScope.$defineNode('T6553F100', 'DIV', 'T59682F00', {
                 'STYLE': 'color:' + color,
@@ -32,7 +32,7 @@ function T77359400() {
                 }
             }
             for (var i = 0; i <= 10; i++) {
-                $DocumentScope.$defineNode('TA0EEBB00', 'TEXTNODE', 'T9AF8DA00', { 'VALUE': '\n\t\t\t' + i + '\n\t\t' });
+                $DocumentScope.$defineNode('TA0EEBB00', 'TEXTNODE', 'T9AF8DA00', { 'VALUE': '\r\n\t\t\t' + i + '\r\n\t\t' });
             }
             try {
                 $DocumentScope.$defineNode('TA6E49C00', 'DIV', 'T7D2B7500', {});

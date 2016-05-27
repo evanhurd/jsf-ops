@@ -5,9 +5,12 @@ function getTemplate(namespace, name){
 
 function DocumentScope(){
 	this.id = DocumentScope.scopeIdCount++;
-	this.$template = null
+	this.$template = null;
 	this.$namespace = null;
 	this._currentRunInstance = null;
+	this.executionInstances = [];
+
+	this.executionInstances.push(new ExcutionInstance());
 }
 
 DocumentScope.prototype.$defineNode = function(nodeId, name, parentID, attributes) {
@@ -57,7 +60,7 @@ ExcutionInstance.prototype.defineNode = function(id, name, parentID, attributes)
 	this.nodes[id] = new Node(id, name, parentID, attributes);
 	this.nodeArray.push(this.nodes[id]);
 	return this.nodes[id];
-}
+};
 
 
 
@@ -68,5 +71,34 @@ function Node(id, name, parentID, attributes){
 	this.name = name;
 	this.parentID = parentID;
 	this.attributes = attributes;
+	this.attributeChanges = {
+		added : {},
+		removed : {},
+		updated : {},
+		unchanged : {}
+	};
 }
 
+function compareExecutionInstances(left, right){
+	var returnObject = {
+		add : [],
+		remove : [],
+		changed : [],
+		unchanged : []
+	};
+
+	for(var i = 0; i < left.nodeArray.length; i++){
+		var leftNode = left.nodeArray[i];
+
+		if(right.nodesArray.indexOf(leftNode) == -1){
+			returnObject.add(leftNode);
+		}else{
+			
+
+		}
+	}
+}
+
+function compareNodes(left, right){
+
+}
