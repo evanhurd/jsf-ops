@@ -9,7 +9,7 @@ function ASTMap(ast, includeNames){
 	this.dictionary = generateDictionary(ast, this.options);
 }
 ASTMap.prototype.traverse = function(cb){
-	traverse(this.ast, cb);
+	traverse(arguments[1] || this.ast, cb);
 }
 
 ASTMap.prototype.find = function(reg, test){	
@@ -92,8 +92,9 @@ function traverse(ast, cb){
 
 		for(var key in node){
 			if(typeof node[key] == 'object' && node[key] != null){
-				cb(node[key])
-				loop(node[key]);
+
+				if(cb(node[key]) != false) loop(node[key]);
+				
 			}
 		}
 	};

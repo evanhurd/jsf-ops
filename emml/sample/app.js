@@ -1,4 +1,5 @@
 function T6553F100() {
+    var $DocumentScope = new DocumentScope();
     $DocumentScope.$Template = function ($DocumentScope) {
         {
             $DocumentScope.$defineNode('T6553F100', 'DOCUMENTNODE', null, {});
@@ -13,10 +14,12 @@ function T6553F100() {
                     function T77359400_EVENT_ONCLICK() {
                         $DocumentScope.$setValue('color', 'blue');
                     }
-                    $DocumentScope.$defineNode('T77359400', 'DIV', 'T6B49D200', {
-                        'STYLE': 'color:' + color,
-                        'ONCLICK': T77359400_EVENT_ONCLICK
-                    });
+                    $DocumentScope.$bind(function () {
+                        $DocumentScope.$defineNode('T77359400', 'DIV', 'T6B49D200', {
+                            'STYLE': 'color:' + $DocumentScope.$getValue('color'),
+                            'ONCLICK': T77359400_EVENT_ONCLICK
+                        });
+                    }, ['color']);
                 }
                 {
                     $DocumentScope.$defineNode('T7D2B7500', 'TEXTNODE', 'T77359400', { 'VALUE': 'Click Me!' });
@@ -29,7 +32,7 @@ function T6553F100() {
                     $DocumentScope.$defineNode('T83215600', 'DIV', 'T6B49D200', {});
                 }
                 {
-                    $DocumentScope.$defineNode('T89173700', 'TEXTNODE', 'T83215600', { 'VALUE': '\n\t\t\tHello World\t\t\n\t\t' });
+                    $DocumentScope.$defineNode('T89173700', 'TEXTNODE', 'T83215600', { 'VALUE': '\r\n\t\t\tHello World\t\t\r\n\t\t' });
                 }
             } catch (err) {
                 $DocumentScope.throw(err, 6, 7);

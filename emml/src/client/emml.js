@@ -79,6 +79,31 @@ DocumentScope.prototype.getOrCreateElement = function(nodeId){
 	return this.elements[nodeId];
 }
 
+DocumentScope.prototype.$setValue = function(){
+	if(arguments.length == 3){
+		var object = arguments[0];
+		var property = arguments[1];
+		var value = arguments[1];
+	}else{
+		var object = this;
+		var property = arguments[0];
+		var value = arguments[1];
+	}
+	object[property] = value;
+	return object[property];
+};
+
+DocumentScope.prototype.$getValue = function(){
+	if(arguments.length == 2){
+		var object = arguments[0];
+		var property = arguments[1];
+	}else{
+		var object = this;
+		var property = arguments[0];
+	}
+	return object[property];
+};
+
 
 //============
 

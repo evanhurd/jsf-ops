@@ -28,8 +28,8 @@ class SourceObject{
 		}
         //console.log(JSON.stringify(this.sourceAst, null, 4));
        	var ast = this.sourceAst;
-        var ast = scoper(ast);
         var ast = parseTemplateStrings(ast);
+        var ast = scoper(ast);
         //var ast = getterSetter(ast);
         //var ast = binaryExpressify(ast);
 

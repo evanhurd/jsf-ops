@@ -354,6 +354,41 @@ class AstStatements {
       };
     }
 
+    BindCallExpressionStatement(body, args){
+      var FunctionExpression = {
+        "type": "FunctionExpression",
+        "id": null,
+        "params": [],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": body
+        },
+        "generator": false,
+        "expression": false
+      };
+      args.splice(0,0,FunctionExpression);
+      return {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "MemberExpression",
+            "computed": false,
+            "object": {
+              "type": "Identifier",
+              "name": "$DocumentScope"
+            },
+            "property": {
+              "type": "Identifier",
+              "name": "$bind"
+            }
+          },
+          "arguments": args
+        }
+      };
+    }
+
     ScopeGetExpression(name){
       return {
         "type": "CallExpression",
