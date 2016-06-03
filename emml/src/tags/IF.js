@@ -19,6 +19,8 @@ class IFTAG extends Tag {
 
     compile(scope){
 
+        this.id = this.parent.id;
+
     	var condition = this.attributes.CONDITION || "true";
 
     	var ast = esprima.parse(condition);

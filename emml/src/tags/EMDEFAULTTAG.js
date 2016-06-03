@@ -5,6 +5,8 @@ var astStatements = require('../AstStatements');
 var selfClosingTags = ["AREA", "BASE", "BR", "COL", "COMMAND", "EMBED", "HR"
                         , "IMG", "INPUT", "KEYGEN", "LINK", "META", "PARAM", "SOURCE", "TRACK", "WBR"];
 
+var eventAttributes = ['ONCLICK'];
+
 class CFDEFAULTTAG extends Tag {
 
 	init(xmlNode){
@@ -24,7 +26,7 @@ class CFDEFAULTTAG extends Tag {
     }
 
     compile(scope){
-
+        
         var astExpressions = [astStatements.DefineNode(this.id, this.tagName.toString(), this.parent.id, this.attributes)];
 
     	var childExpressions = this.compileChildren(scope);

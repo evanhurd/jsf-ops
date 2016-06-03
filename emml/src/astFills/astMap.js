@@ -8,9 +8,11 @@ function ASTMap(ast, includeNames){
 	this.options = arguments[1] || {};
 	this.dictionary = generateDictionary(ast, this.options);
 }
+ASTMap.prototype.traverse = function(cb){
+	traverse(this.ast, cb);
+}
 
-
-ASTMap.prototype.find = function(reg){	
+ASTMap.prototype.find = function(reg, test){	
 	var result = [];
 	var nodesFound = [];
 
@@ -18,6 +20,7 @@ ASTMap.prototype.find = function(reg){
 		var path = this.dictionary.paths[i];
 		
 		var capture = regexFind(reg, path);
+
 		if(capture.length > 0) {
 			var captureGroup = [];
 			var node = null
@@ -82,6 +85,20 @@ function regexFind(regex, regexText ){
 	}
 	
 	return result;
+}
+
+function traverse(ast, cb){
+	var loop = function(node){
+
+		for(var key in node){
+			if(typeof node[key] == 'object' && node[key] != null){
+				cb(node[key])
+				loop(node[key]);
+			}
+		}
+	};
+	
+	loop(ast);
 }
 
 

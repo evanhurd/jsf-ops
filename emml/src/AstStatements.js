@@ -1,6 +1,8 @@
 'use strict';
 var esprima = require('esprima');
 
+var eventAttributes = ['ONCLICK'];
+
 const Indent= {
     DEFINENODE :"$defineNode",
     DOCUMENTSCOPE : "$DocumentScope",
@@ -93,45 +95,60 @@ class AstStatements {
     DefineNode(nodeId, nodeName, parentId, attributes){
 
         var expression = {
-            type: "ExpressionStatement",
-            expression:{
-                "type": "CallExpression",
-                "callee": {
-                  "type": "MemberExpression",
-                  "computed": false,
-                  "object": {
-                    "type": "Identifier",
-                    "name": Indent.DOCUMENTSCOPE
-                  },
-                  "property": {
-                    "type": "Identifier",
-                    "name": Indent.DEFINENODE
-                  }
-                },
-                "arguments": [
-                    {
-                    "type": "Literal",
-                    "value": nodeId,
-                    "raw": "\"" + nodeName + "\"" 
+          type : 'BlockStatement',
+          body : [{
+              type: "ExpressionStatement",
+              expression:{
+                  "type": "CallExpression",
+                  "callee": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                      "type": "Identifier",
+                      "name": Indent.DOCUMENTSCOPE
                     },
-                    {
-                    "type": "Literal",
-                    "value": nodeName,
-                    "raw": "\"" + nodeName + "\""
-                    },
-                    {
-                    "type": "Literal",
-                    "value": parentId,
-                    "raw" : "\"" + parentId + "\""
+                    "property": {
+                      "type": "Identifier",
+                      "name": Indent.DEFINENODE
                     }
-                ]
-            }
+                  },
+                  "arguments": [
+                      {
+                      "type": "Literal",
+                      "value": nodeId,
+                      "raw": "\"" + nodeName + "\"" 
+                      },
+                      {
+                      "type": "Literal",
+                      "value": nodeName,
+                      "raw": "\"" + nodeName + "\""
+                      },
+                      {
+                      "type": "Literal",
+                      "value": parentId,
+                      "raw" : "\"" + parentId + "\""
+                      }
+                  ]
+              }
+          }]
         };
 
         var json = JSON.stringify(attributes);
         var ast = esprima.parse("(" + json + ")");
+        var ExpressionStatementCallExpression = expression.body[0];
 
-        if(ast.body.length > 0) expression.expression.arguments.push(ast.body[0].expression);
+        for(var i = 0; i < ast.body[0].expression.properties.length; i++){
+          var property = ast.body[0].expression.properties[i];
+          if(eventAttributes.indexOf(property.key.value) > -1 && property.value.value.trim().length > 0){
+            var attrAst = esprima.parse(property.value.value.trim());
+            var name = nodeId + "_" + "EVENT" + "_" + property.key.value;
+            property.value = this.Identifer(name);
+            var FunctionDecleration = this.FunctionDecleration(name, attrAst.body);
+            expression.body.splice(0,0, FunctionDecleration);
+          }
+        }
+
+        if(ast.body.length > 0) ExpressionStatementCallExpression.expression.arguments.push(ast.body[0].expression);
 
         return expression;
     }
@@ -244,6 +261,13 @@ class AstStatements {
           };
     }
 
+    Identifer(name){
+      return {
+        "type": "Identifier",
+        "name": name
+      };
+    }
+
     Literal(name){
         return {
           "type": "Literal",
@@ -263,6 +287,39 @@ class AstStatements {
       }
 
        var args = [left, right];
+
+      return {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "MemberExpression",
+            "computed": false,
+            "object": {
+              "type": "Identifier",
+              "name": Indent.DOCUMENTSCOPE
+            },
+            "property": {
+              "type": "Identifier",
+              "name": Indent.SETVALUE
+            }
+          },
+          "arguments": args
+        }
+      };
+    }
+
+    ReturnScopeMemberAssignmentExpression(left, property, right){
+     
+      if(left.type == 'Identifier'){
+        var property = this.Literal(property.name);
+      }else if(property.type == "Literal"){
+        var property = this.Literal(property.name);
+      }else{
+        var property = this.Literal(property.toString());
+      }
+
+       var args = [left, property, right];
 
       return {
         "type": "ExpressionStatement",

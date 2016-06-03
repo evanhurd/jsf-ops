@@ -2,6 +2,7 @@ var astMap = require('./astMap.js');
 var esprima = require('esprima');
 var escodegen = require('escodegen');
 var AstStatements = require('../AstStatements');
+var types = require("ast-types");
 
 module.exports = function(ast){
 	return scope(ast);
@@ -17,7 +18,7 @@ function scope(ast){
 
 	//console.log(escodegen.generate(ast));
 
-
+	
 	
 	scopeVariableDeclerations_IN_ForStatements(ast1);
 	scopeVariableDeclerations(ast1);
@@ -29,100 +30,101 @@ function scope(ast){
 	//scopeFunction(ast1);
 	//scopeVariableDeclaration(map);
 	//scopeIdentifiers(map);*/
+
+	scopeSetters(ast);
 	return ast;
 }
 
-function scopeGetters(ast){
+function scopeSetters(ast){
 	var map = new astMap(ast, {
 		includeIdentifierNames: true,
 		includeLiteralNames: false
 	});
-	console.log(map.dictionary.paths);
 
-	var results = map.find(/(Identifier\[name\=\$setValue\])/);
-	var scopeables = [];
-	
-	for(var i = 0; i < results.length; i++){scopeables
-		var Identifier = results[i][0].node;
-		if(Identifier.$parent.type != 'MemberExpression') continue;
-		var MemberExpression = Identifier.$parent;
-		if(MemberExpression.object.name !== '$DocumentScope') continue;
-		scopeables.push(MemberExpression.$parent.arguments[0].value);
+
+	var results = map.find(/(VariableDeclaration)/);
+	for(var i = 0; i < results.length; i++){
+		var VariableDeclaration = results[i][0].node;
+
+		for(var x = 0; x < VariableDeclaration.declarations.length; x++){
+			var VariableDeclarator = VariableDeclaration.declarations[x];
+			if(VariableDeclarator.id.name == AstStatements.Idents.DOCUMENTSCOPE) continue;
+			var expression = AstStatements.ReturnScopeAssignmentExpression(VariableDeclarator.id, VariableDeclarator.init);
+
+			if(VariableDeclaration.$parent.type == 'ForStatement'){
+				VariableDeclaration.$parent.init = expression.expression;
+				break;
+			}else{
+				var k = VariableDeclaration.$parent.indexOf(VariableDeclaration);
+				VariableDeclaration.$parent.splice(k + x+1, 0,expression);	
+			}
+		}
+		if(VariableDeclaration.$parent.type == 'ForStatement'){
+
+		}else{
+			var k = VariableDeclaration.$parent.indexOf(VariableDeclaration);
+			VariableDeclaration.$parent.splice(k, 1);
+		}
 	}
 
-	var results = map.find(/(Literal)/);
 
-	
-	for(var i = 0; i < results.length; i++){
-		var Literal = results[i][0].node;
-		console.log(Literal);
-		if(scopeables.indexOf(Literal.value) == -1)continue;
-		//console.log(Literal.$parent.$parent);
+	map.traverse(function(node) {
+        if(node.type != 'AssignmentExpression' ) return null;
+        
+        var AssignmentExpression = node;
+        var expression = null;
 
-		if(Literal.$parent.$parent.type == 'CallExpression'
-			&& Literal.$parent.$parent.callee.type == 'MemberExpression'
-			&& Literal.$parent.$parent.callee.object.name == "$DocumentScope"){
-			continue;
+		if(node.$parent && node.$parent.type == 'ForStatement') return null;
+
+		if(AssignmentExpression.left.type == 'MemberExpression'){
+
+			if(AssignmentExpression.left.object.name == AstStatements.Idents.DOCUMENTSCOPE) return null;
+
+			var left = AssignmentExpression.left.object;
+			var property = AssignmentExpression.left.property;
+			var right = AssignmentExpression.right;
+			var expression = AstStatements.ReturnScopeMemberAssignmentExpression(left, property, right);
+		}else{
+			var left = AssignmentExpression.left;
+			var right = AssignmentExpression.right;
+			if(left.name == AstStatements.Idents.DOCUMENTSCOPE) return null;
+			var expression = AstStatements.ReturnScopeAssignmentExpression(left, right);
 		}
 
-		var GetExpression = AstStatements.ScopeGetExpression(Literal.value);
-		Literal.$parent[Literal.$key] = GetExpression;
-	}
+		if(expression)node.$parent[node.$key] = expression.expression;
+	});
+
+	var data = {
+		ExpressionStatement : null,
+		CallExpression : null
+	};
+	map.traverse(function(node) {
+
+        if(!data.ExpressionStatement && node.type != 'ExpressionStatement' )return null;
+        if(node.type != 'ExpressionStatement' )data.ExpressionStatement = node;
+        if(!data.CallExpression && node.type != 'CallExpression' )return null;
+        if(node.type != 'CallExpression' )data.CallExpression = node;
+
+        if(!data.ExpressionStatement || !data.CallExpression) return null;
+
+        if(data.CallExpression.callee == "MemberExpression"
+        	&& data.CallExpression.object.name == '$DocumentScope'
+        	&& data.CallExpression.property.name == '$defineNode'){
+
+
+
+        
+        }else{
+        	data.ExpressionStatement = null;
+        	data.CallExpression = null;
+        }
+	});
+
+	//console.log(map.dictionary.paths);
+
+
 }
 
-function scopeVariableDeclerations_IN_ForStatements(ast){
-	var map = new astMap(ast);
-	var results = map.find(/(ForStatement)\/init\/(VariableDeclaration)/);
-	//console.log(results);
-	for(var i = 0; i < results.length; i++){
-		var ForStatement = results[i][0].node;
-		var BodyArray = ForStatement.$parent;
-
-		var VariableDeclaration = results[i][1].node;
-		var declarations = VariableDeclaration.declarations;
-		for(var x = 0; x < declarations.length; x++){
-			var Declarator = declarations[x];
-			var AssignmentExpression = AstStatements.ReturnScopeAssignmentExpression(Declarator.id, Declarator.init);
-			BodyArray.splice(BodyArray.indexOf(ForStatement), 0, AssignmentExpression);
-		}
-
-		ForStatement.init = null;
-	}
-}
-
-
-function scopeVariableDeclerations(ast){
-	var map = new astMap(ast);
-	var results = map.find(/(VariableDeclarator)/);
-	//console.log(results);
-	for(var i = 0; i < results.length; i++){
-		var Declarator = results[i][0].node;
-		var Declarators = Declarator.$parent;
-		var Declaration = Declarators.$parent;
-		var BodyArray = Declaration.$parent;
-
-		var AssignmentExpression = AstStatements.ReturnScopeAssignmentExpression(Declarator.id, Declarator.init);
-		BodyArray.splice(BodyArray.indexOf(Declaration) + 1, 0, AssignmentExpression);
-
-		if(Declarators.indexOf(Declarator) >= 0)
-			Declarators.splice(Declarators.indexOf(Declarator), 1);
-
-		if(Declarators.length == 0 && BodyArray.indexOf(Declaration) >= 0)
-			BodyArray.splice(BodyArray.indexOf(Declaration), 1);
-
-		//var AssignmentExpression = AstStatements.ReturnAssignmentExpression();
-		//console.log(Decleration);
-	}
-}
-
-function scopeFunction(ast){
-	var map = new astMap(ast);
-
-	var results = map.find(/(FunctionDeclaration|FunctionExpression)\/params\/.*\/(Identifier)/);
-
-	for(var i = 0; i < results.length; i++){
-		var FunctionExpression = results[i][0];
-		var Identifier = results[i][0];
-	}
+function getSetterIdentifiers(){
 
 }

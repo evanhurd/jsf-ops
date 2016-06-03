@@ -1,7 +1,11 @@
 <template name="sidebar" namespace="app.views.home">
-	<!--<attribute name="test" type="string" default="1" require="false"/>
+	<appendto element="body">
 
-	<include template="view"/>-->
-	<var name="color" value="red"/>
-	<div style="color:${color}" onclick="color='blue';">Click Me! ${color}</div>
+		<var name="color" value="red"/>
+		<div style="color:${color}" onclick="color = 'blue';">Click Me!</div>
+
+		<div>
+			Hello World		
+		</div>
+	</appendto>
 </template>

@@ -7,28 +7,84 @@ function DocumentScope(){
 	this.id = DocumentScope.scopeIdCount++;
 	this.$template = null;
 	this.$namespace = null;
-	this._currentRunInstance = null;
-	this.executionInstances = [];
-
-	this.executionInstances.push(new ExcutionInstance());
+	this.$nodes = {};
+	this.renderInstanceCounter = 0;
+	this.renderInstanceID = 0;
+	this.elements = {};
+	this.activeElements = [];
 }
 
-DocumentScope.prototype.$defineNode = function(nodeId, name, parentID, attributes) {
-	if(this._currentExecutionInstance){
-		this._currentExecutionInstance.defineNode(nodeId, name, parentID, attributes);
-	}
+DocumentScope.prototype.$defineNode = function(nodeId, type, parentId, attributes) {
+	this.$nodes[nodeId] = {
+		type : type,
+		parentId : parentId,
+		attributes : attributes,
+		nodeId : nodeId
+	};
 };
 
 DocumentScope.prototype.run = function() {
-	this._currentExecutionInstance = new ExcutionInstance();
+	var elements = [];
+
+	this.$defineNode = function(nodeId, type, parentId, attributes) {
+		if(!this.$nodes[nodeId]){
+			this.$nodes[nodeId] = {
+				type : type,
+				parentId : parentId,
+				attributes : attributes,
+				nodeId : nodeId
+			};
+		}
+		elements.push(nodeId);
+	}.bind(this);
 	this.$Template(this);
-	var instance = this._currentExecutionInstance;
-	this._currentExecutionInstance = null;
-	return instance;
+	return elements;
 };
+
+DocumentScope.prototype.render = function(){
+	var elements = this.run();
+	var removedElements = [];
+
+	var leftPatch = "";
+	var rightPatch = "";
+
+	for(var i = 0; i < this.activeElements.length; i++){
+		leftPatch += this.activeElements[i] + "\n";
+	}
+
+	for(var i = 0; i < elements.length; i++){
+		rightPatch += elements[i] + "\n";
+	}
+
+	var patch = getRenderPatch(leftPatch, rightPatch);
+	domPatch(this.$nodes, patch);
+	this.activeElements = elements;
+	return this;
+}
+
+DocumentScope.prototype.attachTo = function(elementParent){
+	this.elementParent = elementParent;
+}
+
+DocumentScope.prototype.getOrCreateElement = function(nodeId){
+	if(!nodeId){
+		return this.elementParent;
+	}
+	var node = this.$nodes[nodeId];
+	if(this.elements[nodeId] == undefined){
+		var type = node.type.toLowerCase();
+		this.elements[nodeId] = createNode(node.type);
+	}
+
+	return this.elements[nodeId];
+}
+
+
+//============
 
 DocumentScope.prototype.throw = function(err, line, column) {
 	var errorMessage = err.toString();
+	console.log('here');
 	throw errorMessage + " at " + this.namespace + ": " + (line + 1) + ", " + (column + 1);
 };
 
@@ -48,57 +104,22 @@ DocumentScope.getTemplate = function(namespace, name){
 	return template;
 };
 
+//=================
 
-
-function ExcutionInstance(){
-	this.id = ExcutionInstance.idCounter++;
-	this.nodes = {};
-	this.nodeArray = [];
-}
-
-ExcutionInstance.prototype.defineNode = function(id, name, parentID, attributes){
-	this.nodes[id] = new Node(id, name, parentID, attributes);
-	this.nodeArray.push(this.nodes[id]);
-	return this.nodes[id];
-};
-
-
-
-ExcutionInstance.idCounter = 0;
-
-function Node(id, name, parentID, attributes){
-	this.id = id;
-	this.name = name;
-	this.parentID = parentID;
-	this.attributes = attributes;
-	this.attributeChanges = {
-		added : {},
-		removed : {},
-		updated : {},
-		unchanged : {}
-	};
-}
-
-function compareExecutionInstances(left, right){
-	var returnObject = {
-		add : [],
-		remove : [],
-		changed : [],
-		unchanged : []
-	};
-
-	for(var i = 0; i < left.nodeArray.length; i++){
-		var leftNode = left.nodeArray[i];
-
-		if(right.nodesArray.indexOf(leftNode) == -1){
-			returnObject.add(leftNode);
-		}else{
-			
-
-		}
-	}
-}
-
-function compareNodes(left, right){
-
+function getRenderPatch(left,right){
+	var diff = [];
+	var rawDiff = JsDiff.diffLines(left, right);
+	rawDiff.forEach(function(item){
+		var nodes = item.value.split('\n');
+		nodes.forEach(function(node){
+			if( node.trim() ){
+				diff.push({
+					id : node,
+					added : item.added,
+					removed : item.removed
+				});
+			};
+		});
+	});
+	return diff;
 }

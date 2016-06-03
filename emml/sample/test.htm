@@ -8,18 +8,26 @@
   <meta name="description" content="The HTML5 Herald">
   <meta name="author" content="SitePoint">
 
+  <script src="file:///home/evan/git/dom-patch/dom-patch.js"></script>
+  <script src="file:///home/evan/git/jsFinance-cmd/emml/node_modules/diff/dist/diff.min.js"></script>
   <script src="file:///home/evan/git/jsFinance-cmd/emml/src/client/emml.js"></script>
   <script src="file:///home/evan/git/jsFinance-cmd/emml/sample/app.js"></script>
 
-  <script>
-  	var template = getTemplate('app.views.home', 'sidebar');
-  	var result = template.run();
-  	console.log(result);
 
-  </script>
 </head>
 
 <body>
-  
+   <script>
+
+  	var template = getTemplate('app.views.home', 'sidebar');
+  	template.attachTo(document.body);
+  	render();
+
+  	function render(){
+  		template.render()
+  	}
+  	
+
+  </script> 
 </body>
 </html>
